@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>☢️ Operation Springfield — Live Reactor Tracker</title>
+<script>
+  (() => {
+    const param = new URLSearchParams(window.location.search).get("clawpilotTheme");
+    const theme =
+      param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
+<style>
+:root {
+  color-scheme: light;
+  --cp-bg: #f7f4ef;
+  --cp-bg-elevated: #fcfbf8;
+  --cp-surface: #ffffff;
+  --cp-surface-soft: #f5f5f5;
+  --cp-border: #dedede;
+  --cp-border-strong: #919191;
+  --cp-text: #242424;
+  --cp-text-muted: #5c5c5c;
+  --cp-text-soft: #6f6f6f;
+  --cp-accent: #b11f4b;
+  --cp-accent-hover: #9a1a41;
+  --cp-accent-soft: rgba(177, 31, 75, 0.08);
+  --cp-accent-fg: #ffffff;
+  --cp-success: #16a34a;
+  --cp-danger: #dc2626;
+  --cp-warning: #f59e0b;
+  --cp-link: #0078d4;
+  --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+  --cp-overlay: rgba(255, 255, 255, 0.8);
+  --cp-panel: rgba(255, 255, 255, 0.86);
+  --cp-panel-strong: rgba(255, 255, 255, 0.96);
+  --cp-sheen: rgba(255, 255, 255, 0.55);
+  --cp-highlight: rgba(177, 31, 75, 0.12);
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --cp-bg: #3d3b3a;
+  --cp-bg-elevated: #343231;
+  --cp-surface: #292929;
+  --cp-surface-soft: #2e2e2e;
+  --cp-border: #474747;
+  --cp-border-strong: #5f5f5f;
+  --cp-text: #dedede;
+  --cp-text-muted: #919191;
+  --cp-text-soft: #b0b0b0;
+  --cp-accent: #fd8ea1;
+  --cp-accent-hover: #fb7b91;
+  --cp-accent-soft: rgba(253, 142, 161, 0.14);
+  --cp-accent-fg: #1a1a1a;
+  --cp-success: #4ade80;
+  --cp-danger: #f87171;
+  --cp-warning: #fbbf24;
+  --cp-link: #4da6ff;
+  --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+  --cp-overlay: rgba(41, 41, 41, 0.88);
+  --cp-panel: rgba(41, 41, 41, 0.72);
+  --cp-panel-strong: rgba(41, 41, 41, 0.96);
+  --cp-sheen: rgba(255, 255, 255, 0.04);
+  --cp-highlight: rgba(253, 142, 161, 0.12);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--cp-bg);
+  color: var(--cp-text);
+  min-height: 100vh;
+  padding: 1rem 1.25rem 3rem;
+}
+code, .mono { font-family: Consolas, "Courier New", Courier, monospace; }
+
+header {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--cp-surface);
+  border: 1px solid var(--cp-border);
+  border-radius: 16px;
+  box-shadow: 0 0 2px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.14);
+  margin-bottom: 1rem;
+}
+header h1 { font-size: 1.35rem; letter-spacing: 0.02em; }
+header h1 small { display: block; font-size: 0.75rem; font-weight: 400; color: var(--cp-text-muted); margin-top: 2px; }
+.spacer { flex: 1; }
+
+.timer {
+  display: flex; align-items: center; gap: 0.75rem;
+  background: var(--cp-surface-soft);
+  border: 1px solid var(--cp-border);
+  border-radius: 0.625rem;
+  padding: 0.4rem 0.8rem;
+}
+.timer .clock {
+  font-family: Consolas, "Courier New", Courier, monospace;
+  font-size: 1.9rem; font-weight: 700; letter-spacing: 0.05em;
+  min-width: 8.5rem; text-align: center;
+}
+.timer.danger .clock { color: var(--cp-danger); animation: pulse 1s infinite; }
+@keyframes pulse { 50% { opacity: 0.45; } }
+
+button {
+  font: inherit; cursor: pointer;
+  background: var(--cp-accent); color: var(--cp-accent-fg);
+  border: none; border-radius: 0.625rem;
+  padding: 0.45rem 0.9rem; font-weight: 600;
+}
+button:hover { background: var(--cp-accent-hover); }
+button.ghost {
+  background: transparent; color: var(--cp-text-muted);
+  border: 1px solid var(--cp-border);
+}
+button.ghost:hover { background: var(--cp-surface-soft); color: var(--cp-text); }
+
+.status-banner {
+  text-align: center; font-size: 1rem; font-weight: 600;
+  padding: 0.5rem 1rem; margin-bottom: 1rem;
+  background: var(--cp-accent-soft); color: var(--cp-text);
+  border: 1px dashed var(--cp-border-strong);
+  border-radius: 0.625rem;
+}
+
+.top-grid { display: grid; grid-template-columns: 220px 1fr 320px; gap: 1rem; margin-bottom: 1rem; }
+@media (max-width: 1000px) { .top-grid { grid-template-columns: 1fr; } }
+
+.card {
+  background: var(--cp-surface);
+  border: 1px solid var(--cp-border);
+  border-radius: 16px;
+  box-shadow: 0 0 2px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.14);
+  padding: 1rem;
+}
+.card h2 {
+  font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--cp-text-muted); margin-bottom: 0.75rem;
+}
+
+/* Reactor core gauge */
+.reactor { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+.core {
+  position: relative; width: 120px; height: 170px;
+  border: 3px solid var(--cp-border-strong);
+  border-radius: 60px 60px 14px 14px;
+  overflow: hidden;
+  background: var(--cp-surface-soft);
+}
+.core .fill {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 0%;
+  background: var(--cp-success);
+  transition: height 0.6s ease, background 0.6s ease;
+}
+.core .glow { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 2rem; }
+.core-label { font-size: 1.4rem; font-weight: 700; }
+.core-sub { font-size: 0.75rem; color: var(--cp-text-muted); text-align: center; }
+
+/* Phase progress rail */
+.rail { display: flex; flex-direction: column; gap: 0.55rem; }
+.rail-row { display: flex; align-items: center; gap: 0.6rem; }
+.rail-row .name { width: 200px; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rail-row .bar {
+  flex: 1; height: 14px; border-radius: 7px;
+  background: var(--cp-surface-soft); border: 1px solid var(--cp-border);
+  overflow: hidden;
+}
+.rail-row .bar > div { height: 100%; width: 0%; background: var(--cp-accent); transition: width 0.5s ease; border-radius: 7px; }
+.rail-row.done .bar > div { background: var(--cp-success); }
+.rail-row .pct { width: 90px; text-align: right; font-size: 0.8rem; color: var(--cp-text-muted); font-family: Consolas, monospace; }
+
+/* Leaderboard */
+.squads { display: flex; flex-direction: column; gap: 0.6rem; }
+.squad { display: flex; align-items: center; gap: 0.6rem; }
+.squad .dot { width: 14px; height: 14px; border-radius: 50%; flex: none; }
+.squad .sname { width: 110px; font-size: 0.85rem; font-weight: 600; }
+.squad .sbar { flex: 1; height: 16px; border-radius: 8px; background: var(--cp-surface-soft); border: 1px solid var(--cp-border); overflow: hidden; }
+.squad .sbar > div { height: 100%; width: 0%; transition: width 0.5s ease; border-radius: 8px; }
+.squad .spts { width: 70px; text-align: right; font-family: Consolas, monospace; font-size: 0.85rem; }
+.squad-core .dot, .squad-core .sbar > div { background: var(--cp-success); }
+.squad-safety .dot, .squad-safety .sbar > div { background: var(--cp-warning); }
+.squad-launch .dot, .squad-launch .sbar > div { background: var(--cp-danger); }
+.crown { font-size: 0.9rem; }
+
+/* Phases */
+.phases { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1rem; }
+.phase { padding: 0; overflow: hidden; }
+.phase-head {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.8rem 1rem;
+  background: var(--cp-bg-elevated);
+  border-bottom: 1px solid var(--cp-border);
+}
+.phase-head .emoji { font-size: 1.3rem; }
+.phase-head .title { font-weight: 700; font-size: 0.95rem; }
+.phase-head .window { font-size: 0.72rem; color: var(--cp-text-muted); }
+.phase-head .ppts {
+  margin-left: auto; font-family: Consolas, monospace; font-size: 0.8rem;
+  background: var(--cp-accent-soft); color: var(--cp-text);
+  padding: 0.15rem 0.5rem; border-radius: 0.625rem;
+}
+.phase.complete .phase-head { background: var(--cp-highlight); }
+.phase.complete .phase-head .title::after { content: " ✅"; }
+
+.challenge {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.55rem 1rem;
+  border-bottom: 1px solid var(--cp-border);
+  cursor: pointer; user-select: none;
+}
+.challenge:last-child { border-bottom: none; }
+.challenge:hover { background: var(--cp-surface-soft); }
+.challenge .box {
+  width: 20px; height: 20px; flex: none;
+  border: 2px solid var(--cp-border-strong); border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; color: var(--cp-accent-fg);
+}
+.challenge.done .box { background: var(--cp-success); border-color: var(--cp-success); }
+.challenge .label { flex: 1; font-size: 0.85rem; }
+.challenge.done .label { text-decoration: line-through; color: var(--cp-text-muted); }
+.challenge .pts {
+  font-family: Consolas, monospace; font-size: 0.75rem;
+  color: var(--cp-text-muted); flex: none;
+}
+.squad-chip {
+  flex: none; font-size: 0.68rem; font-weight: 700;
+  padding: 0.12rem 0.5rem; border-radius: 999px;
+  border: 1px solid var(--cp-border-strong);
+  cursor: pointer; color: var(--cp-text);
+}
+.squad-chip[data-squad="core"]   { background: var(--cp-success); color: var(--cp-accent-fg); border-color: transparent; }
+.squad-chip[data-squad="safety"] { background: var(--cp-warning); color: #1a1a1a; border-color: transparent; }
+.squad-chip[data-squad="launch"] { background: var(--cp-danger); color: var(--cp-accent-fg); border-color: transparent; }
+
+footer { margin-top: 1.25rem; text-align: center; font-size: 0.75rem; color: var(--cp-text-soft); }
+footer b { color: var(--cp-text-muted); }
+
+/* Confetti */
+.confetti { position: fixed; top: -3rem; font-size: 1.6rem; z-index: 99; animation: fall linear forwards; pointer-events: none; }
+@keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>☢️ OPERATION SPRINGFIELD
+    <small>GitHub Copilot · Java Modernization Hackathon · Sector 7G Live Tracker</small>
+  </h1>
+  <div class="spacer"></div>
+  <div class="timer" id="timerBox">
+    <span>⏱️ Shift remaining</span>
+    <span class="clock" id="clock">8:00:00</span>
+    <button id="timerBtn">Start shift</button>
+    <button class="ghost" id="timerReset" title="Reset timer">↺</button>
+  </div>
+  <button class="ghost" id="resetAll" title="Reset the whole board">Reset board</button>
+</header>
+
+<div class="status-banner" id="statusBanner">🍩 Reactor idle. Start the shift and pick your victim app…</div>
+
+<div class="top-grid">
+  <div class="card reactor">
+    <h2>Reactor Core</h2>
+    <div class="core"><div class="fill" id="coreFill"></div><div class="glow" id="coreGlow">☢️</div></div>
+    <div class="core-label"><span id="totalPts">0</span> pts</div>
+    <div class="core-sub">of <span id="maxPts">0</span> (core 1,000 + bonus 150)</div>
+  </div>
+
+  <div class="card">
+    <h2>Phase Progress</h2>
+    <div class="rail" id="rail"></div>
+  </div>
+
+  <div class="card">
+    <h2>Squad Leaderboard</h2>
+    <div class="squads" id="squads"></div>
+    <p style="font-size:0.7rem; color:var(--cp-text-soft); margin-top:0.75rem;">
+      Tip: click a squad chip on any challenge to reassign credit.
+    </p>
+  </div>
+</div>
+
+<div class="phases" id="phases"></div>
+
+<footer>
+  Rules of the plant: <b>Copilot first</b> · <b>humans review everything</b> · <b>the tracker is law</b> ·
+  <b>stuck &gt;20 min? swarm it</b> · <b>demo &gt; perfect</b> 🍩
+</footer>
+
+<script>
+const SQUADS = {
+  core:   { name: "🟢 Core Crew",   cls: "squad-core" },
+  safety: { name: "🟡 Safety Crew", cls: "squad-safety" },
+  launch: { name: "🔴 Launch Crew", cls: "squad-launch" },
+};
+const SQUAD_ORDER = ["core", "safety", "launch"];
+
+const PHASES = [
+  { id:"p1", emoji:"🔍", title:"Phase 1 — Reactor Scan", window:"09:30–10:15", challenges:[
+    { id:"p1a", pts:40, squad:"core",   label:"Run Copilot AppCAT assessment → readiness report" },
+    { id:"p1b", pts:30, squad:"core",   label:"Architecture diagram + dependency map via Copilot" },
+    { id:"p1c", pts:30, squad:"safety", label:"Triage findings: upgrade / security / cloud-blocker" },
+    { id:"p1d", pts:20, squad:"launch", label:"AGENTS.md / custom instructions for Copilot" },
+  ]},
+  { id:"p2", emoji:"⚛️", title:"Phase 2 — Core Upgrade", window:"10:15–12:15", challenges:[
+    { id:"p2a", pts:40, squad:"core",   label:"Copilot upgrade plan (Java 8→21, Boot 2→3) reviewed & approved" },
+    { id:"p2b", pts:80, squad:"core",   label:"Agent-mode upgrade executed (javax→jakarta, APIs, build)" },
+    { id:"p2c", pts:50, squad:"core",   label:"mvn clean verify GREEN on Java 21" },
+    { id:"p2d", pts:40, squad:"safety", label:"App boots locally, key endpoints respond" },
+    { id:"p2e", pts:40, squad:"core",   label:"Upgrade summary: Copilot vs human fixes, weirdest diff" },
+  ]},
+  { id:"p3", emoji:"🧯", title:"Phase 3 — Meltdown Prevention", window:"12:45–13:30", challenges:[
+    { id:"p3a", pts:50, squad:"safety", label:"CVE scan + Copilot-drafted fix plan" },
+    { id:"p3b", pts:50, squad:"safety", label:"All critical/high CVEs fixed, build still green" },
+    { id:"p3c", pts:30, squad:"safety", label:"Secrets purged from code/config" },
+    { id:"p3d", pts:20, squad:"safety", label:"CI quality gate (build + test + dependency review)" },
+  ]},
+  { id:"p4", emoji:"🚀", title:"Phase 4 — Cloud Evacuation", window:"13:30–15:30", challenges:[
+    { id:"p4a", pts:40, squad:"launch", label:"Containerization plan + Dockerfile; image runs locally" },
+    { id:"p4b", pts:50, squad:"launch", label:"IaC generated (Bicep/Terraform via azd)" },
+    { id:"p4c", pts:80, squad:"launch", label:"DEPLOYED to Azure, reachable over HTTPS" },
+    { id:"p4d", pts:50, squad:"launch", label:"Azure DB with managed identity — zero passwords" },
+    { id:"p4e", pts:30, squad:"launch", label:"Config externalized; one-command redeploy" },
+  ]},
+  { id:"p5", emoji:"✅", title:"Phase 5 — Safety Inspection", window:"15:30–16:15", challenges:[
+    { id:"p5a", pts:40, squad:"safety", label:"Test suite green in cloud build (+ new tests)" },
+    { id:"p5b", pts:30, squad:"launch", label:"Scripted smoke test vs live endpoint passes" },
+    { id:"p5c", pts:30, squad:"launch", label:"Telemetry flowing in Application Insights" },
+    { id:"p5d", pts:30, squad:"safety", label:"Load sanity check (100 reqs), p95 recorded" },
+  ]},
+  { id:"p6", emoji:"🏆", title:"Phase 6 — Audit Day", window:"16:15–17:00", challenges:[
+    { id:"p6a", pts:50, squad:"core",   label:"10-min live demo: old vs new + live Azure endpoint" },
+    { id:"p6b", pts:30, squad:"safety", label:"Before/after one-pager (versions, CVEs, % by Copilot)" },
+    { id:"p6c", pts:20, squad:"launch", label:"Retro: Copilot wins, gotchas, best prompt of the day" },
+  ]},
+  { id:"sq", emoji:"🌟", title:"Side Quests (bonus)", window:"any time", challenges:[
+    { id:"sqa", pts:30, squad:"core",   label:"Prompt Golf — most elegant single prompt (team vote)" },
+    { id:"sqb", pts:30, squad:"safety", label:"Testcontainers integration tests via Copilot pass" },
+    { id:"sqc", pts:30, squad:"core",   label:"Ship a brand-new feature in <30 min with Copilot" },
+    { id:"sqd", pts:30, squad:"launch", label:"Azure cost estimate + one optimization applied" },
+    { id:"sqe", pts:30, squad:"core",   label:"Time Capsule — a MODERNIZATION.md worth reading next year" },
+  ]},
+];
+
+const CORE_MAX = 1000, BONUS_MAX = 150, TOTAL_MAX = CORE_MAX + BONUS_MAX;
+const SHIFT_SECONDS = 8 * 3600;
+const LS_KEY = "operation-springfield-v1";
+
+const STATUS = [
+  { at: 0.0,  msg: "🍩 Reactor idle. Legacy code detected in Sector 7G. Copilot standing by…" },
+  { at: 0.01, msg: "🔍 Scanning the reactor… d'oh, is that Java 8?!" },
+  { at: 0.15, msg: "⚛️ Core upgrade in progress. javax is evacuating, jakarta moving in." },
+  { at: 0.35, msg: "🧯 Meltdown prevention underway. CVEs are being escorted off the premises." },
+  { at: 0.55, msg: "🚀 Cloud evacuation initiated! The monolith has left the building." },
+  { at: 0.75, msg: "✅ Safety inspection… everything's coming up Milhouse!" },
+  { at: 0.90, msg: "🏆 Audit-ready! Mr. Burns says: 'Excellent.'" },
+  { at: 1.0,  msg: "🎉 REACTOR FULLY MODERNIZED. Donuts for everyone!" },
+];
+
+// ---------- state ----------
+let state = { done: {}, squads: {}, timer: { running: false, remaining: SHIFT_SECONDS, lastTick: null } };
+try {
+  const saved = JSON.parse(localStorage.getItem(LS_KEY));
+  if (saved && saved.done) state = saved;
+} catch (e) { /* fresh start */ }
+
+function save() { localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+function squadOf(ch) { return state.squads[ch.id] || ch.squad; }
+
+// ---------- render skeleton ----------
+const phasesEl = document.getElementById("phases");
+const railEl = document.getElementById("rail");
+const squadsEl = document.getElementById("squads");
+
+for (const ph of PHASES) {
+  const card = document.createElement("div");
+  card.className = "card phase"; card.id = "phase-" + ph.id;
+  const total = ph.challenges.reduce((s, c) => s + c.pts, 0);
+  card.innerHTML = `
+    <div class="phase-head">
+      <span class="emoji">${ph.emoji}</span>
+      <div><div class="title">${ph.title}</div><div class="window">${ph.window}</div></div>
+      <span class="ppts" id="ppts-${ph.id}">0 / ${total}</span>
+    </div>`;
+  for (const ch of ph.challenges) {
+    const row = document.createElement("div");
+    row.className = "challenge"; row.id = "ch-" + ch.id;
+    row.innerHTML = `
+      <div class="box">✓</div>
+      <div class="label">${ch.label}</div>
+      <span class="squad-chip" data-ch="${ch.id}"></span>
+      <span class="pts">${ch.pts} pts</span>`;
+    row.addEventListener("click", (e) => {
+      if (e.target.classList.contains("squad-chip")) return;
+      state.done[ch.id] = !state.done[ch.id];
+      save(); render();
+      if (state.done[ch.id]) celebrateSmall();
+    });
+    row.querySelector(".squad-chip").addEventListener("click", () => {
+      const cur = squadOf(ch);
+      const next = SQUAD_ORDER[(SQUAD_ORDER.indexOf(cur) + 1) % SQUAD_ORDER.length];
+      state.squads[ch.id] = next;
+      save(); render();
+    });
+    card.appendChild(row);
+  }
+  phasesEl.appendChild(card);
+
+  const railRow = document.createElement("div");
+  railRow.className = "rail-row"; railRow.id = "rail-" + ph.id;
+  railRow.innerHTML = `
+    <span class="name">${ph.emoji} ${ph.title.replace(/Phase \d — /, "")}</span>
+    <div class="bar"><div id="railfill-${ph.id}"></div></div>
+    <span class="pct" id="railpct-${ph.id}">0%</span>`;
+  railEl.appendChild(railRow);
+}
+
+for (const key of SQUAD_ORDER) {
+  const s = SQUADS[key];
+  const row = document.createElement("div");
+  row.className = "squad " + s.cls; row.id = "squadrow-" + key;
+  row.innerHTML = `
+    <span class="dot"></span><span class="sname">${s.name} <span class="crown" id="crown-${key}"></span></span>
+    <div class="sbar"><div id="sfill-${key}"></div></div>
+    <span class="spts" id="spts-${key}">0</span>`;
+  squadsEl.appendChild(row);
+}
+document.getElementById("maxPts").textContent = TOTAL_MAX.toLocaleString();
+
+// ---------- render loop ----------
+let allDoneCelebrated = false;
+function render() {
+  let total = 0;
+  const squadPts = { core: 0, safety: 0, launch: 0 };
+  let maxSquadPossible = 1;
+
+  for (const ph of PHASES) {
+    let phDone = 0, phTotal = 0, allDone = true;
+    for (const ch of ph.challenges) {
+      phTotal += ch.pts;
+      const done = !!state.done[ch.id];
+      if (done) { phDone += ch.pts; total += ch.pts; squadPts[squadOf(ch)] += ch.pts; }
+      else allDone = false;
+      const row = document.getElementById("ch-" + ch.id);
+      row.classList.toggle("done", done);
+      const chip = row.querySelector(".squad-chip");
+      const sq = squadOf(ch);
+      chip.dataset.squad = sq;
+      chip.textContent = sq.toUpperCase();
+    }
+    document.getElementById("ppts-" + ph.id).textContent = `${phDone} / ${phTotal}`;
+    document.getElementById("phase-" + ph.id).classList.toggle("complete", allDone);
+    const pct = Math.round((phDone / phTotal) * 100);
+    document.getElementById("railfill-" + ph.id).style.width = pct + "%";
+    document.getElementById("railpct-" + ph.id).textContent = pct + "%";
+    document.getElementById("rail-" + ph.id).classList.toggle("done", allDone);
+  }
+
+  // core gauge
+  const frac = total / TOTAL_MAX;
+  const fill = document.getElementById("coreFill");
+  fill.style.height = Math.round(frac * 100) + "%";
+  fill.style.background = frac < 0.34 ? "var(--cp-danger)" : frac < 0.67 ? "var(--cp-warning)" : "var(--cp-success)";
+  document.getElementById("coreGlow").textContent = frac >= 1 ? "🎉" : frac >= 0.67 ? "😎" : frac >= 0.34 ? "😅" : "☢️";
+  document.getElementById("totalPts").textContent = total.toLocaleString();
+
+  // leaderboard
+  const best = Math.max(1, ...Object.values(squadPts));
+  const leader = SQUAD_ORDER.filter(k => squadPts[k] === best && best > 0);
+  for (const key of SQUAD_ORDER) {
+    document.getElementById("sfill-" + key).style.width = Math.round((squadPts[key] / best) * 100) + "%";
+    document.getElementById("spts-" + key).textContent = squadPts[key];
+    document.getElementById("crown-" + key).textContent = leader.includes(key) ? "👑" : "";
+  }
+
+  // status banner
+  let msg = STATUS[0].msg;
+  for (const s of STATUS) if (frac >= s.at) msg = s.msg;
+  document.getElementById("statusBanner").textContent = msg;
+
+  if (frac >= 1 && !allDoneCelebrated) { allDoneCelebrated = true; celebrateBig(); }
+  if (frac < 1) allDoneCelebrated = false;
+}
+
+// ---------- confetti ----------
+function dropEmoji(emoji, duration) {
+  const el = document.createElement("div");
+  el.className = "confetti";
+  el.textContent = emoji;
+  el.style.left = Math.random() * 100 + "vw";
+  el.style.animationDuration = duration + "s";
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), duration * 1000);
+}
+function celebrateSmall() {
+  const picks = ["🍩", "⚛️", "✅", "🚀"];
+  for (let i = 0; i < 6; i++)
+    setTimeout(() => dropEmoji(picks[Math.floor(Math.random() * picks.length)], 2 + Math.random() * 1.5), i * 90);
+}
+function celebrateBig() {
+  const picks = ["🍩", "🎉", "🏆", "⚛️", "🚀", "☢️", "👑"];
+  for (let i = 0; i < 80; i++)
+    setTimeout(() => dropEmoji(picks[Math.floor(Math.random() * picks.length)], 2.5 + Math.random() * 2.5), i * 60);
+}
+
+// ---------- timer ----------
+const clockEl = document.getElementById("clock");
+const timerBtn = document.getElementById("timerBtn");
+const timerBox = document.getElementById("timerBox");
+
+function fmt(sec) {
+  sec = Math.max(0, Math.round(sec));
+  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+  return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+function tick() {
+  if (state.timer.running) {
+    const now = Date.now();
+    state.timer.remaining -= (now - state.timer.lastTick) / 1000;
+    state.timer.lastTick = now;
+    if (state.timer.remaining <= 0) { state.timer.remaining = 0; state.timer.running = false; timerBtn.textContent = "Shift over"; }
+    save();
+  }
+  clockEl.textContent = fmt(state.timer.remaining);
+  timerBox.classList.toggle("danger", state.timer.remaining > 0 && state.timer.remaining < 1800);
+}
+timerBtn.addEventListener("click", () => {
+  if (state.timer.remaining <= 0) return;
+  state.timer.running = !state.timer.running;
+  state.timer.lastTick = Date.now();
+  timerBtn.textContent = state.timer.running ? "Pause" : "Resume";
+  save();
+});
+document.getElementById("timerReset").addEventListener("click", () => {
+  if (!confirm("Reset the 8-hour shift timer?")) return;
+  state.timer = { running: false, remaining: SHIFT_SECONDS, lastTick: null };
+  timerBtn.textContent = "Start shift";
+  save(); tick();
+});
+document.getElementById("resetAll").addEventListener("click", () => {
+  if (!confirm("Reset the ENTIRE board — scores, checkmarks, and timer?")) return;
+  state = { done: {}, squads: {}, timer: { running: false, remaining: SHIFT_SECONDS, lastTick: null } };
+  timerBtn.textContent = "Start shift";
+  save(); render(); tick();
+});
+
+if (state.timer.running) { state.timer.lastTick = Date.now(); timerBtn.textContent = "Pause"; }
+else if (state.timer.remaining < SHIFT_SECONDS && state.timer.remaining > 0) timerBtn.textContent = "Resume";
+
+setInterval(tick, 1000);
+tick();
+render();
+</script>
+</body>
+</html>

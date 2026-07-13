@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>SNPP Sector 7G Safety Ledger</title>
+    <style>
+        body { font-family: "Courier New", monospace; background: #fdf6d8; color: #222; margin: 2rem; }
+        h1 { color: #b7410e; }
+        .banner { background: #222; color: #7CFC00; padding: 0.5rem 1rem; font-weight: bold; }
+        table { border-collapse: collapse; margin: 1rem 0; width: 100%; }
+        th, td { border: 1px solid #999; padding: 0.35rem 0.6rem; text-align: left; }
+        th { background: #f0e0a0; }
+        .sev-4, .sev-5 { color: #b00; font-weight: bold; }
+        footer { margin-top: 2rem; font-size: 0.8rem; color: #666; }
+    </style>
+</head>
+<body>
+<h1>☢️ Springfield Nuclear Power Plant — Sector 7G Safety Ledger</h1>
+<div class="banner" th:text="${banner}">status</div>
+
+<h2>Reactors</h2>
+<table>
+    <tr><th>Name</th><th>Sector</th><th>Status</th><th>Output (MW)</th><th>Last Inspection</th></tr>
+    <tr th:each="r : ${reactors}">
+        <td th:text="${r.name}">name</td>
+        <td th:text="${r.sector}">sector</td>
+        <td th:text="${r.status}">status</td>
+        <td th:text="${r.thermalOutputMw}">mw</td>
+        <td th:text="${r.lastInspection}">date</td>
+    </tr>
+</table>
+
+<h2>Safety Incidents (donut count: <span th:text="${donuts}">0</span> 🍩)</h2>
+<table>
+    <tr><th>Reactor</th><th>Description</th><th>Severity</th><th>Reported By</th><th>When</th></tr>
+    <tr th:each="i : ${incidents}">
+        <td th:text="${i.reactor != null} ? ${i.reactor.name} : 'unknown'">reactor</td>
+        <td th:text="${i.description}">desc</td>
+        <td th:classappend="'sev-' + ${i.severity}" th:text="${i.severity}">sev</td>
+        <td th:text="${i.reportedBy}">who</td>
+        <td th:text="${i.reportedAt}">when</td>
+    </tr>
+</table>
+
+<footer>SNPP internal system. Last redesigned: never. If this page is on fire, contact Smithers.</footer>
+</body>
+</html>
