@@ -1,11 +1,17 @@
-# ☢️ OPERATION SPRINGFIELD
+# ☕ OPERATION FRESH BREW
 ### A GitHub Copilot Java Modernization Hackathon — *Contain the Legacy Meltdown*
 
-> **The story:** The Springfield Nuclear Power Plant runs its entire safety-ledger on a
-> Java 8 / Spring Boot 2.x monolith written decades ago in Sector 7G. The auditors arrive
-> **tomorrow morning**. You have **8 hours** and **one secret weapon — GitHub Copilot
-> app modernization** — to scan it, upgrade it, secure it, and evacuate it to Azure
-> before the reactor (and the audit) melts down.
+> **The story:** Leipzig is Gotham tonight. Rain on the rooftops, sirens in the distance,
+> and beneath the city hums a reactor controlled by one app: a Java 8 / Spring Boot 2.3
+> relic last deployed when its coffee machine still took coins. Tomorrow morning the
+> auditors descend, and if the app fails, the reactor fails — and the city goes dark
+> and glowing. There is no Batman. There is only the signal in the sky: **☕**. It shines
+> over an office coffee corner where six Java developers answer the call the only way
+> they know how — they order another round and open VS Code. No capes, no gadgets;
+> just laptops, double espressos, and **GitHub Copilot app modernization**. You have
+> **8 hours** to brew stale Java into fresh Java — scan it, upgrade it, secure it, ship
+> it to Azure — before the reactor melts down. Leipzig deserves better heroes.
+> Tonight, it gets caffeinated ones.
 
 ---
 

@@ -2,7 +2,7 @@
 
 The Springfield Nuclear Power Plant's safety ledger — a **deliberately legacy**
 Java 8 / Spring Boot 2.3 app. It is the "victim app" for
-**[Operation Springfield](HACKATHON.md)**, an 8-hour GitHub Copilot Java
+**[Operation Fresh Brew](HACKATHON.md)**, an 8-hour GitHub Copilot Java
 modernization hackathon.
 
 > Every `☢️ LEGACY ALERT` comment in the code marks something the hackathon
