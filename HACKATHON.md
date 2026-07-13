@@ -16,7 +16,7 @@
 | **Duration** | 8 hours (one day, e.g. 09:00–17:00) |
 | **Team** | 6 engineers → 3 squads of 2 |
 | **Difficulty** | High — but every phase is achievable with Copilot doing the heavy lifting |
-| **Core toolchain** | VS Code + GitHub Copilot (agent mode) + **GitHub Copilot app modernization for Java** extension, JDK 8→21, Maven, Docker, Azure CLI, `azd` |
+| **Core toolchain** | VS Code + GitHub Copilot agent mode + **GitHub Copilot app modernization** extension — full list in [Toolchain & Prerequisites](#-toolchain--prerequisites-install-before-shift-start) |
 | **Scoring** | 1,000 core points + 150 side-quest bonus points |
 | **Live tracker** | Open [tracker.html](tracker.html) on a shared screen / projector all day |
 
@@ -49,6 +49,71 @@ Two rotating hats (swap every ~2 hours):
 
 ---
 
+## 🧰 Toolchain & Prerequisites (install before shift start)
+
+### Accounts & licenses
+
+| Requirement | Notes |
+|---|---|
+| GitHub account + **GitHub Copilot subscription** | Any plan (Free/Pro/Pro+/Business/Enterprise); agent mode enabled |
+| Azure subscription | Contributor on a shared resource group (needed for Phase 4 only) |
+
+### Per-laptop software (all 6 people)
+
+| Tool | Version / details |
+|---|---|
+| **Visual Studio Code** | 1.113 or later |
+| **GitHub Copilot in VS Code** | Signed in to your GitHub account (Copilot + Copilot Chat) |
+| **GitHub Copilot app modernization** extension | Marketplace ID: `vscjava.migrate-java-to-azure` — restart VS Code after install |
+| Extension Pack for Java | `vscjava.vscode-java-pack` (language support, debugger, Maven) |
+| **JDK — two versions** | Legacy JDK (8 or 11) to run the app as-is **and** target JDK 21 |
+| **Maven** | 3.6+ with access to Maven Central |
+| Git | Project must be Git-managed (it is) |
+| Docker Desktop | Phase 4 containerization |
+| Azure CLI (`az`) + Azure Developer CLI (`azd`) | Phase 4 deploy; run `az login` and `azd auth login` beforehand |
+
+> **AppCAT** (the assessment engine) does NOT need pre-installing — the modernization
+> agent detects and installs it on first “Start Assessment” run. Budget ~5 min for that
+> first run, or trigger it once the day before.
+
+### The Copilot agents you'll drive all day
+
+| Agent / entry point | What it does | Used in |
+|---|---|---|
+| **GitHub Copilot modernization pane** (VS Code sidebar) | *Start Assessment*, *Upgrade Java Runtime & Frameworks*, task tree (Upgrade Spring Boot, Jakarta EE, Generate Unit Test Cases…) | Phases 1, 2, 5 |
+| **`modernize` custom agent** (Copilot Chat agent picker) | Orchestrates assess → plan → execute; generates `plan.md` / `progress.md` / `summary.md`; uses Claude Sonnet by default | Phases 1–3 |
+| **`modernize-java-upgrade`** | JDK/Spring/Jakarta upgrade with build + test validation loop | Phase 2 |
+| **`modernize-java-security`** | CVE scan and dependency fixes | Phase 3 |
+| **Copilot agent mode** (plain chat) | Everything else: Dockerfile, IaC, tests, smoke scripts — e.g. *“Upgrade my Java project to Java 21”* also works as a plain prompt | All phases |
+
+### Optional: terminal-only path (GitHub Copilot CLI)
+
+For squads that prefer the CLI over VS Code:
+
+```bash
+npm install -g @github/copilot
+copilot plugin marketplace add microsoft/modernize-java
+copilot plugin install modernize-java@modernize-java
+# then, from the project directory:
+copilot --model claude-sonnet-4.6 --agent modernize-java:modernize-java
+# prompt: upgrade to Java 21 + Spring Boot 3.x
+```
+
+### 10-minute preflight (run on every laptop the day before)
+
+```powershell
+code --version          # >= 1.113
+code --list-extensions | Select-String "vscjava.migrate-java-to-azure"
+java -version           # legacy JDK on PATH (8 or 11)
+mvn -version            # 3.6+
+docker --version
+az account show         # logged in, correct subscription
+azd version
+mvn clean package       # legacy app builds as-is ✔
+```
+
+---
+
 ## 🕘 Schedule
 
 | Time | Phase | Focus |
@@ -67,9 +132,10 @@ Two rotating hats (swap every ~2 hours):
 ## 🎮 The Challenges
 
 ### H0 — Shift Start (gate, no points)
-- [ ] Everyone has: VS Code, GitHub Copilot + **app modernization for Java** extension, JDK 21 (and the legacy JDK), Maven, Docker, Azure CLI + `azd`, access to a shared Azure subscription/resource group.
-- [ ] Pick the victim app — either **your own legacy Java app**, or a stock legacy target such as a Spring Boot 2.x / Java 8 sample (e.g. an old PetClinic fork or `Azure-Samples/java-migration-copilot-samples`).
+- [ ] [Toolchain & Prerequisites](#-toolchain--prerequisites-install-before-shift-start) green on all 6 laptops (preflight script passes).
+- [ ] Pick the victim app — this repo's **Sector 7G Safety Ledger**, your own legacy Java app, or a stock target like `Azure-Samples/java-migration-copilot-samples`.
 - [ ] Repo forked, everyone can build it *as-is* (`mvn clean package` on the old JDK).
+- [ ] Everyone has opened the **GitHub Copilot modernization pane** once (AppCAT installed).
 - [ ] Tracker open on the big screen, timer started. ☢️
 
 ### Phase 1 — 🔍 Reactor Scan *(120 pts)*
@@ -167,7 +233,10 @@ By end of day the team walks away with:
 
 - [ ] Azure subscription + resource group + RBAC for all 6 (Contributor on the RG)
 - [ ] Quota check: Container Apps / App Service plan, Azure Database (PostgreSQL/MySQL), App Insights
-- [ ] Copilot licenses with agent mode + app modernization extension verified on every laptop
+- [ ] Copilot licenses active for all 6; agent mode verified in VS Code (≥ 1.113)
+- [ ] **GitHub Copilot app modernization** extension (`vscjava.migrate-java-to-azure`) installed on every laptop; run one assessment so AppCAT is downloaded
+- [ ] Both JDKs (legacy 8/11 + target 21), Maven, Docker, `az`, `azd` installed — run the preflight script from the Toolchain section
+- [ ] Optional: Copilot CLI + `modernize-java` plugin for terminal fans
 - [ ] Victim app forked into a team org; branch protection off for the day
 - [ ] [tracker.html](tracker.html) tested on the projector (state auto-saves in the browser)
 - [ ] Donuts. Non-negotiable. 🍩

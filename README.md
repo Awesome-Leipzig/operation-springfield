@@ -18,7 +18,11 @@ modernization hackathon.
 
 ## Run the legacy app (before you fix it)
 
-**Prereqs:** JDK 8 or 11, Maven 3.6+
+**Prereqs:** JDK 8 or 11, Maven 3.6+ — the full hackathon toolchain (VS Code ≥ 1.113,
+GitHub Copilot + the **GitHub Copilot app modernization** extension
+(`vscjava.migrate-java-to-azure`), Docker, `az`, `azd`, and the optional Copilot CLI
+`modernize-java` plugin) is listed in
+[HACKATHON.md → Toolchain & Prerequisites](HACKATHON.md#-toolchain--prerequisites-install-before-shift-start).
 
 ```bash
 mvn spring-boot:run
@@ -60,10 +64,10 @@ This app is a trap, on purpose. Your Copilot-powered mission:
 
 ## How to run the hackathon
 
-1. Read [HACKATHON.md](HACKATHON.md) — goals, 3 squads, 6 phases, points.
+1. Read [HACKATHON.md](HACKATHON.md) — goals, 3 squads, 6 phases, points, and the **Toolchain & Prerequisites** section (install everything the day before; the preflight script takes 10 minutes).
 2. Open [tracker.html](tracker.html) on a projector. Hit **Start shift**.
 3. Fork this repo, make sure everyone can build it *as-is*.
-4. Point GitHub Copilot's **app modernization for Java** tooling at it and start Phase 1.
+4. Open the **GitHub Copilot modernization pane** in VS Code → *Start Assessment* (installs AppCAT on first run), then drive the `modernize` agents through Phases 1–6.
 5. Check off challenges on the tracker as you go. Confetti is earned, not given.
 
 *All credentials in this repository are fictional and planted for training. Any resemblance to real secrets, living or rotated, is purely coincidental.*
