@@ -53,7 +53,7 @@ This app is a trap, on purpose. Your Copilot-powered mission:
 | JUnit 4 + `SpringRunner` | `src/test` | JUnit 5 (Phase 2) |
 | `new Integer(...)`, `Hashtable`, `StringBuffer` | services | Modern Java (Phase 2) |
 | Static shared `SimpleDateFormat` (not thread-safe) | `DateUtils` | `java.time` (Phase 2) |
-| CVE-laden deps: commons-text 1.8, commons-collections 3.2.1, guava 19 | `pom.xml` | Bump/remove (Phase 3) |
+| CVE-laden deps: commons-text 1.8, commons-collections 3.2.1, guava 20 | `pom.xml` | Bump/remove (Phase 3) |
 | Hardcoded credentials (fake) | `SecretConstants`, `application.properties` | Managed identity / env config (Phase 3) |
 | `System.out` logging | `LegacyAuditFilter`, `DataLoader` | SLF4J + App Insights (Phase 4–5) |
 | H2 in-memory "production" DB | `application.properties` | Azure database (Phase 4) |

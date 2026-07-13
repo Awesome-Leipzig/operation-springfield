@@ -2,6 +2,7 @@ package com.springfield.plant.service;
 
 import com.springfield.plant.model.Reactor;
 import com.springfield.plant.repository.ReactorRepository;
+import com.springfield.plant.util.DateUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -50,7 +51,7 @@ public class ReactorService {
     /** Reactors that have not been inspected within the given number of days. */
     public List<Reactor> overdueForInspection(int maxDays) {
         List<Reactor> result = new ArrayList<Reactor>();
-        Date cutoff = new Date(System.currentTimeMillis() - (long) maxDays * 86400000L);
+        Date cutoff = DateUtils.daysAgo(maxDays);
         List<Reactor> all = reactorRepository.findAll();
         for (int i = 0; i < all.size(); i++) {
             Reactor r = all.get(i);

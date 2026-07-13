@@ -36,6 +36,6 @@ public final class DateUtils {
 
     public static Date daysAgo(int days) {
         // ☢️ LEGACY ALERT: manual millisecond math instead of java.time.
-        return new Date(System.currentTimeMillis() - (long) days * 24L * 60L * 60L * 1000L);
+        return new Date(System.currentTimeMillis() - days * 24L * 60L * 60L * 1000L);
     }
 }

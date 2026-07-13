@@ -6,10 +6,10 @@
 <title>☢️ Operation Springfield — Live Reactor Tracker</title>
 <script>
   (() => {
-    const param = new URLSearchParams(window.location.search).get("clawpilotTheme");
+    const param = new URLSearchParams(globalThis.location.search).get("clawpilotTheme");
     const theme =
-      param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-    document.documentElement.setAttribute("data-theme", theme);
+      param || (globalThis.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.dataset.theme = theme;
   })();
 </script>
 <style>
@@ -350,14 +350,14 @@ const SHIFT_SECONDS = 8 * 3600;
 const LS_KEY = "operation-springfield-v1";
 
 const STATUS = [
-  { at: 0.0,  msg: "🍩 Reactor idle. Legacy code detected in Sector 7G. Copilot standing by…" },
+  { at: 0,    msg: "🍩 Reactor idle. Legacy code detected in Sector 7G. Copilot standing by…" },
   { at: 0.01, msg: "🔍 Scanning the reactor… d'oh, is that Java 8?!" },
   { at: 0.15, msg: "⚛️ Core upgrade in progress. javax is evacuating, jakarta moving in." },
   { at: 0.35, msg: "🧯 Meltdown prevention underway. CVEs are being escorted off the premises." },
   { at: 0.55, msg: "🚀 Cloud evacuation initiated! The monolith has left the building." },
   { at: 0.75, msg: "✅ Safety inspection… everything's coming up Milhouse!" },
-  { at: 0.90, msg: "🏆 Audit-ready! Mr. Burns says: 'Excellent.'" },
-  { at: 1.0,  msg: "🎉 REACTOR FULLY MODERNIZED. Donuts for everyone!" },
+  { at: 0.9,  msg: "🏆 Audit-ready! Mr. Burns says: 'Excellent.'" },
+  { at: 1,    msg: "🎉 REACTOR FULLY MODERNIZED. Donuts for everyone!" },
 ];
 
 // ---------- state ----------
@@ -365,7 +365,9 @@ let state = { done: {}, squads: {}, timer: { running: false, remaining: SHIFT_SE
 try {
   const saved = JSON.parse(localStorage.getItem(LS_KEY));
   if (saved && saved.done) state = saved;
-} catch (e) { /* fresh start */ }
+} catch (e) {
+  console.warn("Springfield tracker: saved state unreadable, starting a fresh shift.", e);
+}
 
 function save() { localStorage.setItem(LS_KEY, JSON.stringify(state)); }
 function squadOf(ch) { return state.squads[ch.id] || ch.squad; }
@@ -432,54 +434,86 @@ document.getElementById("maxPts").textContent = TOTAL_MAX.toLocaleString();
 
 // ---------- render loop ----------
 let allDoneCelebrated = false;
-function render() {
-  let total = 0;
-  const squadPts = { core: 0, safety: 0, launch: 0 };
-  let maxSquadPossible = 1;
 
-  for (const ph of PHASES) {
-    let phDone = 0, phTotal = 0, allDone = true;
-    for (const ch of ph.challenges) {
-      phTotal += ch.pts;
-      const done = !!state.done[ch.id];
-      if (done) { phDone += ch.pts; total += ch.pts; squadPts[squadOf(ch)] += ch.pts; }
-      else allDone = false;
-      const row = document.getElementById("ch-" + ch.id);
-      row.classList.toggle("done", done);
-      const chip = row.querySelector(".squad-chip");
-      const sq = squadOf(ch);
-      chip.dataset.squad = sq;
-      chip.textContent = sq.toUpperCase();
+function renderChallenge(ch) {
+  const done = !!state.done[ch.id];
+  const row = document.getElementById("ch-" + ch.id);
+  row.classList.toggle("done", done);
+  const chip = row.querySelector(".squad-chip");
+  const sq = squadOf(ch);
+  chip.dataset.squad = sq;
+  chip.textContent = sq.toUpperCase();
+  return done;
+}
+
+function renderPhase(ph, squadPts) {
+  let phDone = 0, phTotal = 0, allDone = true;
+  for (const ch of ph.challenges) {
+    phTotal += ch.pts;
+    if (renderChallenge(ch)) {
+      phDone += ch.pts;
+      squadPts[squadOf(ch)] += ch.pts;
+    } else {
+      allDone = false;
     }
-    document.getElementById("ppts-" + ph.id).textContent = `${phDone} / ${phTotal}`;
-    document.getElementById("phase-" + ph.id).classList.toggle("complete", allDone);
-    const pct = Math.round((phDone / phTotal) * 100);
-    document.getElementById("railfill-" + ph.id).style.width = pct + "%";
-    document.getElementById("railpct-" + ph.id).textContent = pct + "%";
-    document.getElementById("rail-" + ph.id).classList.toggle("done", allDone);
   }
+  document.getElementById("ppts-" + ph.id).textContent = `${phDone} / ${phTotal}`;
+  document.getElementById("phase-" + ph.id).classList.toggle("complete", allDone);
+  const pct = Math.round((phDone / phTotal) * 100);
+  document.getElementById("railfill-" + ph.id).style.width = pct + "%";
+  document.getElementById("railpct-" + ph.id).textContent = pct + "%";
+  document.getElementById("rail-" + ph.id).classList.toggle("done", allDone);
+  return phDone;
+}
 
-  // core gauge
-  const frac = total / TOTAL_MAX;
+function coreColor(frac) {
+  if (frac < 0.34) return "var(--cp-danger)";
+  if (frac < 0.67) return "var(--cp-warning)";
+  return "var(--cp-success)";
+}
+
+function coreGlyph(frac) {
+  if (frac >= 1) return "🎉";
+  if (frac >= 0.67) return "😎";
+  if (frac >= 0.34) return "😅";
+  return "☢️";
+}
+
+function renderCore(total, frac) {
   const fill = document.getElementById("coreFill");
   fill.style.height = Math.round(frac * 100) + "%";
-  fill.style.background = frac < 0.34 ? "var(--cp-danger)" : frac < 0.67 ? "var(--cp-warning)" : "var(--cp-success)";
-  document.getElementById("coreGlow").textContent = frac >= 1 ? "🎉" : frac >= 0.67 ? "😎" : frac >= 0.34 ? "😅" : "☢️";
+  fill.style.background = coreColor(frac);
+  document.getElementById("coreGlow").textContent = coreGlyph(frac);
   document.getElementById("totalPts").textContent = total.toLocaleString();
+}
 
-  // leaderboard
+function renderLeaderboard(squadPts) {
   const best = Math.max(1, ...Object.values(squadPts));
-  const leader = SQUAD_ORDER.filter(k => squadPts[k] === best && best > 0);
+  const leaders = new Set(SQUAD_ORDER.filter(k => squadPts[k] === best && best > 0));
   for (const key of SQUAD_ORDER) {
     document.getElementById("sfill-" + key).style.width = Math.round((squadPts[key] / best) * 100) + "%";
     document.getElementById("spts-" + key).textContent = squadPts[key];
-    document.getElementById("crown-" + key).textContent = leader.includes(key) ? "👑" : "";
+    document.getElementById("crown-" + key).textContent = leaders.has(key) ? "👑" : "";
   }
+}
 
-  // status banner
+function renderStatus(frac) {
   let msg = STATUS[0].msg;
-  for (const s of STATUS) if (frac >= s.at) msg = s.msg;
+  for (const s of STATUS) {
+    if (frac >= s.at) msg = s.msg;
+  }
   document.getElementById("statusBanner").textContent = msg;
+}
+
+function render() {
+  const squadPts = { core: 0, safety: 0, launch: 0 };
+  let total = 0;
+  for (const ph of PHASES) total += renderPhase(ph, squadPts);
+
+  const frac = total / TOTAL_MAX;
+  renderCore(total, frac);
+  renderLeaderboard(squadPts);
+  renderStatus(frac);
 
   if (frac >= 1 && !allDoneCelebrated) { allDoneCelebrated = true; celebrateBig(); }
   if (frac < 1) allDoneCelebrated = false;
