@@ -1,0 +1,103 @@
+{
+  "$schema": "../../assessment/../create-modernization-plan/tasks-schema.json",
+  "description": "Tasks template for modernization plan. Generate this file alongside plan.md to track individual migration tasks.",
+  "tasks": [
+    {
+      "type": "security",
+      "id": "001-security-cwe-456-missing-initialization",
+      "description": "Scan and resolve CWE-456 vulnerabilities for this project.",
+      "reason": "The SafetyIncident no-arg constructor (used by JPA/Jackson deserialization) leaves critical fields uninitialized, and IncidentController.report() persists incidents without defaulting or validating them, allowing silent 0-severity incidents and null string fields.",
+      "requirements": "Addresses issues: Missing Initialization of a Variable (CWE-456). Ensure severity, reportedBy, and description on SafetyIncident are explicitly initialized or validated before persistence. Add boundary validation in IncidentController.report() so no incident is stored with unset critical fields. Do not weaken existing reportedAt handling. Verify the project builds and all existing tests pass.",
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "false",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "security",
+      "id": "002-security-cwe-570-expression-always-false",
+      "description": "Scan and resolve CWE-570 vulnerabilities for this project.",
+      "reason": "IncidentService.capitalizeWords() contains a guard condition ('if (word.isEmpty())') that can never be true because the input is already trimmed, non-blank, and split on one-or-more whitespace, leaving dead code.",
+      "requirements": "Addresses issues: Expression is Always False (CWE-570). Remove or correct the always-false dead-code branch in IncidentService.capitalizeWords() while preserving the method's word-capitalization behavior. Verify the project builds and all existing tests pass.",
+      "dependencies": ["001-security-cwe-456-missing-initialization"],
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "false",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "security",
+      "id": "003-security-cwe-665-improper-initialization",
+      "description": "Scan and resolve CWE-665 vulnerabilities for this project.",
+      "reason": "ReactorController.create() and IncidentController.report() accept and persist entities from JSON with zero validation, allowing invalid state such as negative megawatts, null names/sectors/status, and unconstrained incident severity.",
+      "requirements": "Addresses issues: Improper Initialization (CWE-665). Introduce input validation at the controller boundary so reactors and incidents cannot be persisted in an invalid or improperly initialized state (e.g., reject negative thermal output, require name/sector/status, constrain severity). Preserve existing default behavior for lastInspection. Verify the project builds and all existing tests pass.",
+      "dependencies": ["002-security-cwe-570-expression-always-false"],
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "false",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "security",
+      "id": "004-security-cwe-682-incorrect-calculation",
+      "description": "Scan and resolve CWE-682 vulnerabilities for this project.",
+      "reason": "ReactorService.totalOnlineOutputMw() and IncidentService.totalDonuts() sum integer values using int arithmetic that can silently overflow past Integer.MAX_VALUE and wrap to a negative result used as an official total.",
+      "requirements": "Addresses issues: Incorrect Calculation (CWE-682). Prevent silent integer overflow in the aggregate calculations for reactor online output and incident donut totals by using an overflow-safe accumulation approach. Preserve the existing return semantics where reasonable. Verify the project builds and all existing tests pass.",
+      "dependencies": ["003-security-cwe-665-improper-initialization"],
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "false",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "security",
+      "id": "005-security-cwe-1057-data-access-outside-manager",
+      "description": "Scan and resolve CWE-1057 vulnerabilities for this project.",
+      "reason": "DataLoader directly injects and calls ReactorRepository, IncidentRepository, and EmployeeRepository, bypassing the service layer that enforces business rules such as incident normalization and lastInspection defaulting.",
+      "requirements": "Addresses issues: Data Access Operations Outside of Expected Data Manager Component (CWE-1057). Route DataLoader's data-access operations through the designated service layer (ReactorService, IncidentService, EmployeeService) so business rules are consistently applied instead of using repositories raw. Verify the project builds and all existing tests pass.",
+      "dependencies": ["004-security-cwe-682-incorrect-calculation"],
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "false",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "security",
+      "id": "006-security-cwe-732-incorrect-permission-assignment",
+      "description": "Scan and resolve CWE-732 vulnerabilities for this project.",
+      "reason": "LegacyAuditFilter.doFilter() evaluates apiKeyConfigured() only for logging and never enforces it, so every request is forwarded unconditionally and all safety-critical write endpoints are reachable by unauthenticated actors.",
+      "requirements": "Addresses issues: Incorrect Permission Assignment for Critical Resource (CWE-732). Enforce the configured API key / access control in the request filter so safety-critical endpoints (incident and reactor write operations) reject unauthorized requests instead of forwarding them unconditionally. Do not hardcode secrets; source the API key from configuration or an external secret store. Verify the project builds and all existing tests pass.",
+      "dependencies": ["005-security-cwe-1057-data-access-outside-manager"],
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "false",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "security",
+      "id": "007-security-cwe-778-insufficient-logging",
+      "description": "Scan and resolve CWE-778 vulnerabilities for this project.",
+      "reason": "IncidentService.report() and ReactorService.save() perform security-critical write operations without any logging, leaving state-mutating events without an audit trail.",
+      "requirements": "Addresses issues: Insufficient Logging (CWE-778). Add appropriate SLF4J audit logging to the security-critical write operations in IncidentService.report() and ReactorService.save() so state changes are recorded with sufficient context. Use parameterized log messages and do not log secrets. Verify the project builds and all existing tests pass.",
+      "dependencies": ["006-security-cwe-732-incorrect-permission-assignment"],
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "false",
+        "passUnitTests": "true"
+      }
+    }
+  ],
+  "metadata": {
+    "planName": "CWE Remediation - Sector 7G Safety Ledger",
+    "projectName": "sector-7g-safety-ledger",
+    "language": "java",
+    "createdAt": "2026-07-14T00:00:00Z",
+    "version": "1.0"
+  }
+}
