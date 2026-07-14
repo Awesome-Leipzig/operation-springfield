@@ -2,15 +2,36 @@
   "version": "1.0.0",
   "producer": "Java AppCAT CLI",
   "metadata": {
-    "analysisStartTime": "2026-07-14T14:15:53.8128372Z",
-    "analysisEndTime": "2026-07-14T14:17:21.795502Z",
-    "status": "Complete",
+    "analysisStartTime": "2026-07-14T14:15:52.194Z",
+    "analysisEndTime": "2026-07-14T14:20:18.070Z",
     "privacyMode": "Protected",
-    "privacyModeHelpUrl": "https://aka.ms/appcat-privacy-mode",
-    "targetIds": [],
-    "targetDisplayNames": null,
-    "capabilities": [],
-    "os": []
+    "privacyModeHelpUrl": "https://aka.ms/appmod-privacy-mode",
+    "targetIds": [
+      "azure-aks",
+      "azure-appservice",
+      "azure-container-apps"
+    ],
+    "targetDisplayNames": [
+      "Azure Kubernetes Service",
+      "Azure App Service",
+      "Azure Container Apps"
+    ],
+    "capabilities": [
+      "openjdk25"
+    ],
+    "os": [
+      "windows",
+      "linux"
+    ],
+    "id": "20260714161552",
+    "name": "Report_20260714161552",
+    "status": "completed",
+    "domains": [
+      "cloud-readiness"
+    ],
+    "mode": "full",
+    "minimumCveSeverity": "high",
+    "cveScanScope": "direct"
   },
   "summary": {
     "totalProjects": 1,
@@ -465,5 +486,6 @@
         "os=linux"
       ]
     }
-  }
+  },
+  "security": []
 }
