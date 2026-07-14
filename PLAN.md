@@ -3,16 +3,48 @@
 Source of truth for tasks: `tracker.html` (26 tracker line items across Phase 2–6 + Side
 Quests; Phase 1 is explicitly excluded per instructions — it is already checked off).
 
-## ✅ All subagent-doable work complete — final status
+## ✅ All subagent-doable work complete — final status (post-verification pass)
 
 Following the pause, the user granted Owner access on `rg-swo-gh-hackathon-team2` and
-asked for the app to be deployed there (done), then asked to continue through the
-remaining leftovers (also done). **23 of 26 tracker items are done**, **3 are
-correctly blocked** (live demo, retro, and Prompt Golf — human/team-only activities
-with prep materials ready: `DEMO-SCRIPT.md`, `RETRO-TEMPLATE.md`). Reactor Core
-score: **1,050 / 1,150 pts** (only the 3 human-only items remain unchecked).
-Phases 2, 3, 4, 5 are 100%; Phase 6 is 30% (one-pager done); Side Quests are 80%
-(everything but the team vote).
+asked for the app to be deployed there (done), asked to continue through the
+remaining leftovers (done), then asked for a full re-verification pass — which
+**caught a real, live production bug** (see below), now fixed and re-verified.
+**23 of 26 tracker items are done**, **3 are correctly blocked** (live demo, retro,
+and Prompt Golf — human/team-only activities with prep materials ready:
+`DEMO-SCRIPT.md`, `RETRO-TEMPLATE.md`). Reactor Core score: **1,050 / 1,150 pts**
+(only the 3 human-only items remain unchecked). Phases 2, 3, 4, 5 are 100%;
+Phase 6 is 30% (one-pager done); Side Quests are 80% (everything but the team vote).
+
+### 🚨 Caught during verification: a real production incident, live
+
+Asked to verify every claim rather than trust prior status, direct testing of the
+live `/api/reactors/{id}/inspect` endpoint (added earlier as the Side Quest feature)
+returned **404** — the live app was running a **stale image**: `azd provision` (run
+for the cost-optimization change) only updates infrastructure, it does **not**
+rebuild/push the container image. Fixed by running `azd deploy`.
+
+That redeploy then surfaced a second, more serious issue: the user reported the live
+app **intermittently showing a whitelabel/500 error**. Root cause: the earlier
+scale-to-zero cost optimization (`minReplicas: 0`) let Container Apps cold-start
+**two replicas concurrently** after an idle period; both raced to run Hibernate's
+schema auto-DDL against the same empty Postgres database, corrupting one replica's
+session and causing ~50% of requests (round-robined to the broken replica) to fail
+with `relation "reactor" does not exist`. Fixed in three layers:
+1. `spring.jpa.hibernate.ddl-auto=create-drop` was hardcoded globally (fine for H2,
+   dangerous for shared Postgres) — made configurable via
+   `SPRING_JPA_HIBERNATE_DDL_AUTO`, defaulting to `update` in production.
+2. Added a guard in `DataLoader` so replicas restarting against an already-seeded
+   database don't insert duplicate rows.
+3. **Reverted `minReplicas` back to `1`** — the real fix, since even `update` mode
+   isn't safe against concurrent *first-time* schema creation by multiple replicas.
+   The cost optimization is reverted; full incident writeup and a path to safely
+   re-enable it later (Flyway/Liquibase) is in `COST-ESTIMATE.md`.
+
+**Re-verified after the fix**: `mvn clean verify` (32/32 tests green), Docker build
++ run, Bicep validation, live smoke test (4/4), live load test (100/100, p95 104ms),
+no data duplication (still exactly 4 reactors / 5 incidents), telemetry still
+flowing, zero-passwords claim still holds, GitHub CI green, and the `/inspect`
+endpoint now genuinely works live.
 
 ### 🎉 Side Quests + Phase 6 one-pager completed
 - **Testcontainers**: `ReactorRepositoryPostgresIT` proves the JPA layer against a
@@ -21,17 +53,16 @@ Phases 2, 3, 4, 5 are 100%; Phase 6 is 30% (one-pager done); Side Quests are 80%
   with a `testcontainers-` prefix) and `maven-failsafe-plugin` so `*IT.java` classes
   actually run during `mvn verify` (Surefire ignores them by naming convention).
 - **New feature in <30 min**: `POST /api/reactors/{id}/inspect` — stamps
-  `lastInspection = now()`, 404 on unknown id, 5 new tests, manually verified live.
-- **Azure cost estimate + optimization**: pulled real pricing from the Azure Retail
-  Prices API for the actual deployed SKUs (~$67–69/month) — see
-  `COST-ESTIMATE.md`. Applied scale-to-zero on the Container App (`minReplicas: 0`
-  + HTTP concurrency rule), the single largest cost driver (~$39/month, over half
-  the bill) — new estimate ~$28–30/month. Applied and verified against the live
-  deployment.
+  `lastInspection = now()`, 404 on unknown id, 5 new tests, verified live for real
+  (see incident above).
+- **Azure cost estimate + optimization attempt**: pulled real pricing from the Azure
+  Retail Prices API for the actual deployed SKUs (~$67–69/month) — see
+  `COST-ESTIMATE.md`. Scale-to-zero was tried, caused the production incident above,
+  and was reverted; estimate stands at ~$67–69/month.
 - **`MODERNIZATION.md`**: a teammate had already started this (Phase 2/3 only,
   tracked with a stray `.MD` casing that would have been a broken-link risk on
   GitHub's case-sensitive storage — fixed) — updated in place with the full
-  Phase 4–6 + Side Quests journey rather than duplicating it.
+  Phase 4–6 + Side Quests journey (including the incident) rather than duplicating it.
 - **`ONE-PAGER.md`**: before/after with real numbers — versions, 1 real CVE fixed,
   82 files / 6,168 insertions since the legacy seed commit, 32 tests, live endpoint
   + load-test + cost numbers.

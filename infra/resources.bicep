@@ -264,18 +264,29 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
             { name: 'SPRING_DATASOURCE_USERNAME', value: identityName }
             { name: 'AZURE_CLIENT_ID', value: identityClientId }
             { name: 'PLANT_API_KEY', secretRef: 'plant-api-key' }
+            // create-drop (the local/H2 default) would drop and recreate the schema
+            // on every replica startup -- destructive against a shared Postgres
+            // instance, especially with scale-to-zero/scale-out enabled below.
+            { name: 'SPRING_JPA_HIBERNATE_DDL_AUTO', value: 'update' }
             { name: 'APPLICATIONINSIGHTS_CONNECTION_STRING', value: appInsights.properties.ConnectionString }
           ]
         }
       ]
       scale: {
-        // Cost optimization (Side Quest): hackathon/dev workload doesn't need 24/7
-        // uptime. Scale-to-zero when idle instead of always running >=1 replica —
-        // this alone was the single largest line item in the cost estimate
-        // (~$39/month for an always-on 0.5 vCPU / 1Gi replica). An HTTP concurrency
-        // rule brings a replica back up on the next request (cold start adds a few
-        // seconds of latency, acceptable for this workload). See COST-ESTIMATE.md.
-        minReplicas: 0
+        // REVERTED (2026-07-14): scale-to-zero (minReplicas: 0) was applied as a
+        // cost optimization, but it caused a real production incident -- when
+        // traffic arrived after an idle period, Container Apps cold-started TWO
+        // replicas concurrently from zero. Both independently ran Hibernate's
+        // `update` schema check against the empty Postgres database at the same
+        // time; one replica's CREATE TABLE raced the other's, corrupting that
+        // replica's session and causing intermittent 500s ("relation ... does not
+        // exist") for roughly half of all requests (round-robin load balancing).
+        // `minReplicas: 1` keeps exactly one stable replica always running, so
+        // schema creation only ever happens once, non-concurrently. Scaling OUT
+        // (1 -> 3) under load remains safe, since by then the schema already
+        // exists and `update` is a no-op. See COST-ESTIMATE.md for the corrected
+        // cost estimate and MODERNIZATION.md for the full incident writeup.
+        minReplicas: 1
         maxReplicas: 3
         rules: [
           {

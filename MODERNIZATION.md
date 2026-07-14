@@ -136,12 +136,35 @@ written mid-modernization:
 - **Testcontainers** (above) ✅
 - **New feature in <30 min**: `POST /api/reactors/{id}/inspect` — stamps
   `lastInspection = now()`, 404 if unknown, 5 new tests.
-- **Azure cost estimate + optimization**: pulled real pricing from the Azure Retail
-  Prices API for the actual deployed SKUs (~$67–69/month), then applied
-  scale-to-zero on the Container App (`minReplicas: 0` + an HTTP concurrency scale
-  rule) — the single largest cost line item (~$39/month, over half the bill) —
-  bringing the estimate down to ~$28–30/month. Full breakdown:
-  [COST-ESTIMATE.md](COST-ESTIMATE.md).
+- **Azure cost estimate + optimization attempt**: pulled real pricing from the Azure
+  Retail Prices API for the actual deployed SKUs (~$67–69/month), then applied
+  scale-to-zero on the Container App — which **caused a real production incident**
+  (two replicas cold-starting concurrently corrupted the Postgres schema, causing
+  intermittent 500s) and was reverted. Estimate stands at the original ~$67–69/month.
+  Full incident writeup: [COST-ESTIMATE.md](COST-ESTIMATE.md).
+
+### 🚨 Production incident: scale-to-zero cold-start race condition
+
+After applying the scale-to-zero cost optimization, live traffic arriving after an
+idle period caused Container Apps to cold-start **two replicas simultaneously**.
+Both independently ran Hibernate's schema auto-DDL against the same empty Postgres
+database at the same time — one replica's `CREATE TABLE` won, the other's failed
+and corrupted that replica's session, causing ~50% of requests (round-robined to
+the broken replica) to fail with `500` / `relation "reactor" does not exist`,
+while the other half succeeded — a confusing, intermittent symptom that the user
+caught live ("the page is loading" / "showing a whitelabel error" from moment to
+moment). Root-caused and fixed in two layers:
+1. `spring.jpa.hibernate.ddl-auto=create-drop` was hardcoded globally — dangerous
+   against a shared persistent database. Made configurable
+   (`SPRING_JPA_HIBERNATE_DDL_AUTO`, defaulting to `update` in production).
+2. Even `update` mode isn't safe against **concurrent first-time schema creation**
+   by multiple replicas — the real fix was reverting `minReplicas: 0` back to `1`,
+   eliminating the scale-from-zero race entirely (scale-*out* under load remains
+   safe since the schema already exists by then).
+
+Also added a guard in `DataLoader` so replica restarts against an already-seeded
+database don't insert duplicate rows — a related risk from the same root cause
+(tables persisting across restarts instead of being dropped-and-recreated).
 
 ## Important note for next year
 
@@ -175,11 +198,15 @@ Recommended next steps — updated now that most of the original list is done:
 5. ~~Add operational telemetry and production-grade logging/alerts~~ — **telemetry
    done** (Application Insights, confirmed flowing); alerting rules are still open
    if you want proactive paging rather than just dashboards.
-6. **Stop the Postgres server between hackathon sessions** if cost matters further —
+6. **Replace Hibernate auto-DDL with Flyway/Liquibase** before attempting
+   scale-to-zero again — a proper migration tool uses a database-level lock so
+   concurrent replica cold-starts can't race on schema creation. This would make
+   `minReplicas: 0` safe and unlock the ~$39/month saving that was reverted above.
+7. **Stop the Postgres server between hackathon sessions** if cost matters further —
    unlike Container Apps, Postgres Flexible Server doesn't scale-to-zero
    automatically; `az postgres flexible-server stop` between sessions would trim
-   the remaining ~$14.53/month compute line item (see COST-ESTIMATE.md).
+   the ~$14.53/month compute line item (see COST-ESTIMATE.md).
 
 ---
 
-This was not just a version bump. It was a stability, security, and operability reset — and then an actual live deployment to prove it.
+This was not just a version bump. It was a stability, security, and operability reset — and then an actual live deployment (incidents, on-call debugging, and all) to prove it.

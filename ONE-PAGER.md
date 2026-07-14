@@ -54,16 +54,21 @@ review everything").
   (`rg-swo-gh-hackathon-team2`, Germany West Central)
 - **Smoke test**: 4/4 endpoints return 200 (`/`, `/api/reactors`, `/api/incidents`,
   `/swagger-ui/index.html`)
-- **Load test**: 100/100 requests succeeded — p50 83ms / p95 104ms / p99 108ms
+- **Load test**: 100/100 requests succeeded — p50 81ms / p95 104ms / p99 120ms
   (see [LOAD-TEST-RESULTS.md](LOAD-TEST-RESULTS.md))
 - **Telemetry**: confirmed flowing in Application Insights (verified via API query)
-- **Cost**: ~$67–69/month estimated before optimization → **~$28–30/month** after
-  scaling the Container App to zero when idle (see [COST-ESTIMATE.md](COST-ESTIMATE.md))
+- **Cost**: ~$67–69/month. A scale-to-zero optimization was tried and **caused a
+  real production incident** (concurrent cold-start replicas raced on Postgres
+  schema creation, corrupting one replica's session) — reverted; see
+  [COST-ESTIMATE.md](COST-ESTIMATE.md) for the full incident writeup.
 
 ## What's still open
 
 - `LegacyAuditFilter` remains audit-only — a Spring Security baseline for the API
   is the next real security gap (TRIAGE.md finding S7).
+- Scale-to-zero cost savings (~$39/month) remain unrealized until Hibernate
+  auto-DDL is replaced with a proper migration tool (Flyway/Liquibase) that can
+  safely handle concurrent replica cold-starts.
 - Postgres Flexible Server doesn't scale-to-zero the way Container Apps does;
   stopping it between sessions is a manual further cost optimization.
 

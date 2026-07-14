@@ -32,6 +32,16 @@ public class DataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        // ddl-auto is `update` in production (see application.properties) so the
+        // Postgres schema persists across restarts/replica scale-ups -- without
+        // this guard, every cold start would insert a fresh set of duplicate seed
+        // rows on top of whatever's already there.
+        if (!reactorService.findAll().isEmpty()) {
+            log.info("Sector 7G Safety Ledger already seeded ({} reactors) -- skipping DataLoader.",
+                    reactorService.findAll().size());
+            return;
+        }
+
         Reactor core1 = reactorService.save(new Reactor("Old Bessie", "7G", "ONLINE", 480, DateUtils.daysAgo(200)));
         Reactor core2 = reactorService.save(new Reactor("Core Blimey", "7G", "ONLINE", 512, DateUtils.daysAgo(45)));
         Reactor core3 = reactorService.save(new Reactor("The Inconvenience", "6F", "MELTDOWN-ISH", 730, DateUtils.daysAgo(730)));
