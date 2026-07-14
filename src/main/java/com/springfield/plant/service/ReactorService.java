@@ -37,11 +37,11 @@ public class ReactorService {
     }
 
     @Transactional(readOnly = true)
-    public Integer totalOnlineOutputMw() {
+    public long totalOnlineOutputMw() {
         return reactorRepository.findByStatus("ONLINE").stream()
                 .map(Reactor::getThermalOutputMw)
                 .filter(output -> output != null)
-                .mapToInt(Integer::intValue)
+                .mapToLong(Integer::longValue)
                 .sum();
     }
 

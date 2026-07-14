@@ -48,9 +48,9 @@ public class IncidentService {
     }
 
     @Transactional(readOnly = true)
-    public int totalDonuts() {
+    public long totalDonuts() {
         return incidentRepository.findAll().stream()
-                .mapToInt(SafetyIncident::getDonutsConsumedDuringIncident)
+                .mapToLong(SafetyIncident::getDonutsConsumedDuringIncident)
                 .sum();
     }
 
