@@ -83,5 +83,20 @@ graph TD
 
 ## Open Questions & Questionnaire
 
-- [ ] Target Java LTS version (e.g., 21 vs 25) and matching Spring Boot / Spring Framework majors — the kbId-backed upgrade tasks will select compatible supported versions; confirm if a specific target is required.
-- [ ] Target container host (Azure Container Apps vs Azure Kubernetes Service) — the Dockerfile is host-agnostic; confirm the intended platform if it affects base image or port configuration.
+- [x] Target Java LTS version (e.g., 21 vs 25) and matching Spring Boot / Spring Framework majors — **resolved: Java 21 + Spring Boot 4.x / Spring Framework 7.x**, as reflected in `pom.xml` (`java.version=21`, `spring-boot-starter-parent:4.0.0`). Java 25 was considered (per AGENTS.md's aspirational Java Development Guidelines) but is out of scope for this migration to avoid re-validating the whole stack against a newer, less-proven runtime mid-hackathon.
+- [x] Target container host (Azure Container Apps vs Azure Kubernetes Service) — **resolved: Azure Container Apps**, as reflected in `azure-container-app.yaml` (`type: Microsoft.App/containerApps`).
+
+## Phase 2 Sign-off
+
+- **Upgrade executed**: Java 8 → 21, Spring Boot 2.3.12 → 4.0.0, `javax.*` → `jakarta.*`
+  (verified: no `javax.*` imports remain in `src/`; entities/`LegacyAuditFilter` use
+  `jakarta.persistence.*` / `jakarta.servlet.*`), SpringFox replaced with
+  springdoc-openapi, legacy idioms (`Hashtable`, `StringBuffer`, `new Integer(...)`,
+  static `SimpleDateFormat`) removed in favor of modern Java/`java.time` equivalents.
+- **Build verified green**: `mvn clean verify` → `BUILD SUCCESS`, 4/4 tests passing on
+  Java 21.0.11 (Temurin), Maven 3.9.16.
+- **Runtime verified**: `mvn spring-boot:run` boots the app; `/`, `/api/reactors`,
+  `/api/incidents`, and `/swagger-ui/index.html` all return HTTP 200.
+- **Reviewed & approved**: plan reviewed against current repo state; both open
+  questions above resolved. Signed off as part of the Phase 2 subagent-loop validation
+  pass.

@@ -8,6 +8,11 @@ modernization hackathon.
 > Every `☢️ LEGACY ALERT` comment in the code marks something the hackathon
 > challenges will make you fix — with Copilot doing the heavy lifting.
 
+🚀 **Live deployment**: https://ca-f26yymfqkwvk4.icyfield-7de6aa92.germanywestcentral.azurecontainerapps.io/
+(Azure Container Apps, `rg-swo-gh-hackathon-team2`, Germany West Central — Postgres
+Flexible Server with managed-identity/zero-password auth, telemetry in Application
+Insights).
+
 ## What's in the box
 
 | File | What it is |
@@ -53,7 +58,31 @@ Build the container image:
 docker build -t sector-7g-safety-ledger:latest .
 ```
 
-Deploy with `az containerapp` using the provided manifest:
+### Option A — one-command deploy with `azd` (recommended)
+
+Full IaC (Container App, Container Registry, Postgres Flexible Server with
+Entra-only/managed-identity auth, Key Vault, Application Insights + Log Analytics)
+lives in [`azure.yaml`](azure.yaml) and [`infra/`](infra). It's been validated with
+`az bicep build` (compiles cleanly) but **not yet deployed** — an actual deploy
+requires an authenticated Azure subscription:
+
+```bash
+az login
+azd auth login
+azd up               # provisions infra + builds/pushes the image + deploys, in one command
+```
+
+Redeploy after a code change with just:
+
+```bash
+azd deploy
+```
+
+### Option B — manual `az containerapp` with the static manifest
+
+For a quicker/simpler deploy against an already-existing Container Apps environment,
+`azure-container-app.yaml` is a hand-authored manifest (Key Vault-backed secrets,
+system-assigned managed identity) you can feed directly to the CLI:
 
 ```bash
 az containerapp create --yaml azure-container-app.yaml
