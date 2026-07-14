@@ -3,6 +3,7 @@ package com.springfield.plant.web;
 import com.springfield.plant.model.Reactor;
 import com.springfield.plant.service.ReactorService;
 import com.springfield.plant.util.DateUtils;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -39,8 +40,7 @@ public class ReactorController {
     }
 
     @PostMapping
-    public Reactor create(@RequestBody Reactor reactor) {
-        // ☢️ LEGACY ALERT: zero validation. Negative megawatts? Sure, why not.
+    public Reactor create(@Valid @RequestBody Reactor reactor) {
         if (reactor.getLastInspection() == null) {
             reactor.setLastInspection(DateUtils.daysAgo(0));
         }
