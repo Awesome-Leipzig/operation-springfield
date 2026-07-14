@@ -365,14 +365,15 @@ const STATUS = [
 // subagent-doable Side Quests / Phase 6 items (see MODERNIZATION.md, ONE-PAGER.md,
 // COST-ESTIMATE.md). Only p6a (live demo) and p6c (retro) remain unchecked — draft
 // materials are prepped (DEMO-SCRIPT.md, RETRO-TEMPLATE.md) but humans must present/
-// fill them in. sqa (Prompt Golf) is a team vote, not applicable to the loop.
+// fill them in. sqa (Prompt Golf) was decided by team vote — Golden Donut went to
+// the original session-kickoff prompt, recorded in RETRO-TEMPLATE.md.
 const DEFAULT_DONE = {
   p2a: true, p2b: true, p2c: true, p2d: true, p2e: true,
   p3a: true, p3b: true, p3c: true, p3d: true,
   p4a: true, p4b: true, p4c: true, p4d: true, p4e: true,
   p5a: true, p5b: true, p5c: true, p5d: true,
   p6b: true,
-  sqb: true, sqc: true, sqd: true, sqe: true,
+  sqa: true, sqb: true, sqc: true, sqd: true, sqe: true,
 };
 let state = { done: { ...DEFAULT_DONE }, squads: {}, timer: { running: false, remaining: SHIFT_SECONDS, lastTick: null } };
 try {

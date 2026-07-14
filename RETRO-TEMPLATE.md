@@ -27,9 +27,9 @@ Contributor.)*
 
 ## Best prompt of the day 🍩 (Golden Donut nominee)
 
-**Prompt:**
+**Prompt:** Use the playwright mcp to navigate to https://awesome-leipzig.github.io/operation-springfield/tracker.html and write a plan for implementation of all the tasks provided there. The stage 1 is already done and does not need to be recognized. Create a plan for each stage. Goal is to have a loop for subagents which run in a loop to fulfill the tasks and validate the functionality
 
-**Why it won:**
+**Why it won:** It modernized, deployed and tested the whole application by itself with minor human intervention for 3 hours.
 
 ## 🧯 Safety Inspector nominee (nastiest bug/CVE caught)
 

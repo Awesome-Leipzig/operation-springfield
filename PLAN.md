@@ -5,18 +5,23 @@ Side Quests; Phase 1 is excluded — it was already complete before this effort 
 
 ## ✅ Final status
 
-**23 of 26 tracker items are done.** **3 are correctly blocked** on human/team-only
-activities (prep materials are ready for all three):
+**24 of 26 tracker items are done.** **2 remain blocked** on human-only activities
+(prep materials are ready for both):
 
 | Task | Status |
 |---|---|
 | `p6-live-demo` — 10-min live demo | Prep done (`DEMO-SCRIPT.md`); humans present using the live endpoint. |
 | `p6-retro` — team retro | Prep done (`RETRO-TEMPLATE.md`); humans fill in during the retro. |
-| `sq-prompt-golf` — team vote | Not applicable to a subagent loop. |
 
-**Reactor Core score: 1,050 / 1,150 pts.** Phases 2, 3, 4, 5 are 100%; Phase 6 is 30%
-(one-pager done, demo/retro pending humans); Side Quests are 80% (everything but the
-team vote).
+**Prompt Golf resolved**: the team's Golden Donut went to the original session-kickoff
+prompt ("Use the playwright mcp to navigate to tracker.html and write a plan... loop
+for subagents which run in a loop to fulfill the tasks and validate the
+functionality") — recorded in `RETRO-TEMPLATE.md`. Rationale: it drove the entire
+modernize → deploy → test loop end-to-end with minimal human intervention over ~3
+hours.
+
+**Reactor Core score: 1,080 / 1,150 pts.** Phases 2, 3, 4, 5 are 100%; Phase 6 is 30%
+(one-pager done, demo/retro pending humans); Side Quests are 100%.
 
 **Key decision carried through the whole effort**: Java target stayed at **21 LTS**
 (matches `pom.xml` and hackathon scoring) rather than the Java 25 mentioned in
@@ -98,7 +103,7 @@ team vote).
 | Phase 4 — Cloud Evacuation | 250/250 | ✅ Done | Live at the endpoint above; `infra/` Bicep; zero passwords confirmed |
 | Phase 5 — Safety Inspection | 130/130 | ✅ Done | 32 tests incl. a real Testcontainers Postgres IT; smoke/load scripts validated live; telemetry confirmed |
 | Phase 6 — Audit Day | 30/100 | 🔶 Partial | One-pager done (`ONE-PAGER.md`); demo + retro need humans (prep ready) |
-| Side Quests | 120/150 | 🔶 Partial | Testcontainers, new feature (`/api/reactors/{id}/inspect`), cost estimate, `MODERNIZATION.md` all done; only the team Prompt Golf vote remains |
+| Side Quests | 150/150 | ✅ Done | Testcontainers, new feature (`/api/reactors/{id}/inspect`), cost estimate, `MODERNIZATION.md`, and Prompt Golf (team vote, recorded in `RETRO-TEMPLATE.md`) all done |
 
 Full detail for each of these lives in its own doc rather than duplicated here:
 `UPGRADE-SUMMARY.md`, `CVE-SCAN.md`, `COST-ESTIMATE.md`, `LOAD-TEST-RESULTS.md`,
