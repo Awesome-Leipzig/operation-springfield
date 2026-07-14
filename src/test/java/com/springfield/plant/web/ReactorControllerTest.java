@@ -69,7 +69,7 @@ class ReactorControllerTest {
     @Test
     @DisplayName("shouldReturnTotalOutput_whenRequested")
     void shouldReturnTotalOutput_whenRequested() throws Exception {
-        when(reactorService.totalOnlineOutputMw()).thenReturn(992);
+        when(reactorService.totalOnlineOutputMw()).thenReturn(992L);
 
         mockMvc.perform(get("/api/reactors/output"))
                 .andExpect(status().isOk())
