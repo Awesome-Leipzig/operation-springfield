@@ -89,6 +89,45 @@ system-assigned managed identity) you can feed directly to the CLI:
 az containerapp create --yaml azure-container-app.yaml
 ```
 
+### Option C — GitHub Actions (recommended for continuous delivery)
+
+This repository now includes two Azure workflows:
+
+| Workflow | Trigger | Purpose |
+|---|---|---|
+| `.github/workflows/deploy-azure.yml` | `push` to `main`, `workflow_dispatch` | Build/test + deploy app to existing Azure Container App + smoke test |
+| `.github/workflows/provision-azure.yml` | `workflow_dispatch` | Provision or refresh Azure infrastructure with `azd provision` |
+
+#### Required GitHub Secrets
+
+Create the following repository (or environment) secrets:
+
+| Secret | Description |
+|---|---|
+| `AZURE_CLIENT_ID` | Entra app/client ID used for GitHub OIDC federation |
+| `AZURE_TENANT_ID` | Entra tenant ID |
+| `AZURE_SUBSCRIPTION_ID` | Azure subscription ID |
+| `AZURE_RESOURCE_GROUP` | Existing target resource group (`rg-swo-gh-hackathon-team2`) |
+| `AZURE_LOCATION` | Azure location (for example `germanywestcentral`) |
+| `AZURE_CONTAINER_APP_NAME` | Container App name used by smoke-test URL resolution |
+
+The workflows use OpenID Connect with `azure/login@v3`, so no long-lived Azure client secret is required.
+
+#### Workflow Usage
+
+1. Run **Provision Azure Infrastructure** when setting up a new environment or applying infra changes.
+2. Merge to `main` (or manually dispatch) to run **Deploy to Azure Container Apps** for regular app rollouts.
+3. Deployment workflow runs `mvn clean verify`, deploys via `azd deploy web`, then validates:
+	- `/`
+	- `/api/reactors`
+	- `/api/incidents`
+	- `/swagger-ui/index.html`
+
+#### Re-run and rollback guidance
+
+- Re-run the latest deployment workflow from GitHub Actions to redeploy the current `main` commit.
+- For rollback, redeploy a previous known-good commit by re-running the workflow on that commit or by reverting the problematic merge and allowing the `main` trigger to redeploy.
+
 ## The planted modernization targets
 
 This app is a trap, on purpose. Your Copilot-powered mission:
