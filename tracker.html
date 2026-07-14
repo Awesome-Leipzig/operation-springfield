@@ -361,10 +361,24 @@ const STATUS = [
 ];
 
 // ---------- state ----------
-let state = { done: {}, squads: {}, timer: { running: false, remaining: SHIFT_SECONDS, lastTick: null } };
+// Reflects verified progress through Phase 5 (see UPGRADE-SUMMARY.md, CVE-SCAN.md,
+// LOAD-TEST-RESULTS.md, and infra/). Phase 4 is now fully done: deployed live to
+// rg-swo-gh-hackathon-team2 via `azd provision` + `azd deploy`, Postgres connected
+// passwordlessly via managed identity, smoke/load tests and telemetry validated
+// against the live endpoint.
+const DEFAULT_DONE = {
+  p2a: true, p2b: true, p2c: true, p2d: true, p2e: true,
+  p3a: true, p3b: true, p3c: true, p3d: true,
+  p4a: true, p4b: true, p4c: true, p4d: true, p4e: true,
+  p5a: true, p5b: true, p5c: true, p5d: true,
+};
+let state = { done: { ...DEFAULT_DONE }, squads: {}, timer: { running: false, remaining: SHIFT_SECONDS, lastTick: null } };
 try {
   const saved = JSON.parse(localStorage.getItem(LS_KEY));
-  if (saved && saved.done) state = saved;
+  if (saved && saved.done) {
+    state = saved;
+    state.done = { ...DEFAULT_DONE, ...saved.done };
+  }
 } catch (e) {
   console.warn("Springfield tracker: saved state unreadable, starting a fresh shift.", e);
 }

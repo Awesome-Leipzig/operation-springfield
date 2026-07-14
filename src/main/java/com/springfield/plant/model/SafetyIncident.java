@@ -39,13 +39,13 @@ public class SafetyIncident {
     }
 
     public SafetyIncident(Reactor reactor, String description, int severity,
-                          String reportedBy, Instant reportedAt, int donuts) {
+                          String reportedBy, Instant reportedAt, int donutsConsumedDuringIncident) {
         this.reactor = reactor;
         this.description = description;
         this.severity = severity;
         this.reportedBy = reportedBy;
         this.reportedAt = reportedAt;
-        this.donutsConsumedDuringIncident = donuts;
+        this.donutsConsumedDuringIncident = donutsConsumedDuringIncident;
     }
 
     public Long getId() { return id; }
