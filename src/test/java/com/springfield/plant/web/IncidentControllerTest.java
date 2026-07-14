@@ -51,7 +51,6 @@ class IncidentControllerTest {
     @Test
     @DisplayName("shouldReportIncident_whenPosted")
     void shouldReportIncident_whenPosted() throws Exception {
-        var reactor = new Reactor("Old Bessie", "7G", "ONLINE", 480, Instant.now());
         when(incidentService.report(any(SafetyIncident.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         var requestBody = """
