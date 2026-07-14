@@ -2,8 +2,8 @@
   "version": "1.0.0",
   "producer": "Java AppCAT CLI",
   "metadata": {
-    "analysisStartTime": "2026-07-14T13:36:08.3777024Z",
-    "analysisEndTime": "2026-07-14T13:36:08.6824402Z",
+    "analysisStartTime": "2026-07-14T09:48:14.8579398Z",
+    "analysisEndTime": "2026-07-14T09:48:15.0476697Z",
     "status": "Complete",
     "privacyMode": "Protected",
     "privacyModeHelpUrl": "https://aka.ms/appcat-privacy-mode",

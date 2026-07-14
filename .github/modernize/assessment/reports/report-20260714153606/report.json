@@ -1,0 +1,120 @@
+{
+  "version": "1.0.0",
+  "producer": "Java AppCAT CLI",
+  "metadata": {
+    "analysisStartTime": "2026-07-14T13:36:06.609Z",
+    "analysisEndTime": "2026-07-14T13:39:41.503Z",
+    "privacyMode": "Protected",
+    "privacyModeHelpUrl": "https://aka.ms/appmod-privacy-mode",
+    "targetIds": [
+      "azure-aks",
+      "azure-appservice",
+      "azure-container-apps"
+    ],
+    "targetDisplayNames": [
+      "Azure Kubernetes Service",
+      "Azure App Service",
+      "Azure Container Apps"
+    ],
+    "capabilities": [
+      "openjdk25"
+    ],
+    "os": [
+      "windows",
+      "linux"
+    ],
+    "id": "20260714153606",
+    "name": "Report_20260714153606",
+    "status": "completed",
+    "domains": [
+      "security"
+    ],
+    "mode": "issue-only",
+    "minimumCveSeverity": "high",
+    "cveScanScope": "direct"
+  },
+  "summary": {
+    "totalProjects": 1,
+    "totalIssues": 0,
+    "totalIncidents": 0,
+    "totalEffort": 0,
+    "charts": {
+      "severity": {
+        "mandatory": 0,
+        "optional": 0,
+        "potential": 0,
+        "information": 0
+      },
+      "category": {}
+    }
+  },
+  "projects": [
+    {
+      "path": ".",
+      "issues": 0,
+      "storyPoints": 0,
+      "properties": {
+        "appName": "sector-7g-safety-ledger",
+        "jdkVersion": "21",
+        "frameworks": [
+          "Spring Boot",
+          "Spring"
+        ],
+        "languages": [
+          "Java"
+        ],
+        "tools": [
+          "Maven"
+        ]
+      },
+      "incidents": []
+    }
+  ],
+  "rules": {},
+  "security": [
+    {
+      "id": "CWE-259",
+      "title": "Use of Hard-coded Password",
+      "category": "Credentials & Secrets",
+      "severity": "optional",
+      "description": "The product contains a hard-coded password, which it uses for its own inbound authentication or for outbound communication to external components.",
+      "evidence": {
+        "files": [
+          "src/test/java/com/springfield/plant/config/LegacyAuditFilterTest.java"
+        ],
+        "explanation": "LegacyAuditFilterTest contains hard-coded password strings passed directly to PlantSecurityProperties at lines 43 and 58: `new PlantSecurityProperties(\"configured-key\")`. Although located in test code, these are literal hard-coded credential values embedded in source that should use a test-property placeholder or randomly generated value instead of a fixed string."
+      },
+      "storyPoint": 5
+    },
+    {
+      "id": "CWE-778",
+      "title": "Insufficient Logging",
+      "category": "Credentials & Secrets",
+      "severity": "potential",
+      "description": "When a security-critical event occurs, the product either does not record the event or omits important details about the event when logging it.",
+      "evidence": {
+        "files": [
+          "src/main/java/com/springfield/plant/config/LegacyAuditFilter.java",
+          "src/main/java/com/springfield/plant/web/GlobalExceptionHandler.java"
+        ],
+        "explanation": "LegacyAuditFilter.doFilter() (line 37) logs only method and URI at INFO level and never logs security-critical outcomes such as missing or invalid API keys, unauthorized access attempts, or rejected requests — every request is always passed through regardless of credentials. GlobalExceptionHandler handles validation exceptions (MethodArgumentNotValidException) without any security-level logging of the violation. No component in the application logs authentication failures or authorization denials."
+      },
+      "storyPoint": 3
+    },
+    {
+      "id": "CWE-798",
+      "title": "Use of Hard-coded Credentials",
+      "category": "Credentials & Secrets",
+      "severity": "optional",
+      "description": "The product contains hard-coded credentials, such as a password or cryptographic key.",
+      "evidence": {
+        "files": [
+          "src/test/java/com/springfield/plant/config/LegacyAuditFilterTest.java",
+          "infra/resources.bicep"
+        ],
+        "explanation": "LegacyAuditFilterTest hard-codes the credential string \"configured-key\" directly in source at lines 43 and 58 via `new PlantSecurityProperties(\"configured-key\")`. Additionally, infra/resources.bicep sets the Key Vault secret value to the literal string 'REPLACE_ME_POST_DEPLOY' (line ~128), a placeholder credential committed to source control that could be deployed as-is to a live environment."
+      },
+      "storyPoint": 5
+    }
+  ]
+}
