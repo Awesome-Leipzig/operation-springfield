@@ -3,6 +3,8 @@ package com.springfield.plant.repository;
 import com.springfield.plant.model.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
-    Employee findByName(String name);
+    Optional<Employee> findByName(String name);
 }

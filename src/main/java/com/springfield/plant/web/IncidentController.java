@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -33,7 +33,7 @@ public class IncidentController {
     @PostMapping
     public SafetyIncident report(@RequestBody SafetyIncident incident) {
         if (incident.getReportedAt() == null) {
-            incident.setReportedAt(new Date());
+            incident.setReportedAt(Instant.now());
         }
         return incidentService.report(incident);
     }

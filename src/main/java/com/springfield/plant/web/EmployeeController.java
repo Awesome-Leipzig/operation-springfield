@@ -1,7 +1,8 @@
 package com.springfield.plant.web;
 
 import com.springfield.plant.model.Employee;
-import com.springfield.plant.repository.EmployeeRepository;
+import com.springfield.plant.service.EmployeeService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,19 +19,21 @@ import java.util.List;
 @RequestMapping("/api/employees")
 public class EmployeeController {
 
-    private final EmployeeRepository employeeRepository;
+    private final EmployeeService employeeService;
 
-    public EmployeeController(EmployeeRepository employeeRepository) {
-        this.employeeRepository = employeeRepository;
+    public EmployeeController(EmployeeService employeeService) {
+        this.employeeService = employeeService;
     }
 
     @GetMapping
     public List<Employee> all() {
-        return employeeRepository.findAll();
+        return employeeService.findAll();
     }
 
     @GetMapping("/{name}")
-    public Employee byName(@PathVariable String name) {
-        return employeeRepository.findByName(name); // ☢️ returns null → 200 with empty body
+    public ResponseEntity<Employee> byName(@PathVariable String name) {
+        return employeeService.findByName(name)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

@@ -1,15 +1,14 @@
 package com.springfield.plant.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import java.util.Date;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+
+import java.time.Instant;
 
 /**
  * A reactor core in the plant.
- * ☢️ LEGACY ALERT: javax.persistence (Boot 3 needs jakarta.*), java.util.Date,
- * status as a free-text String instead of an enum.
  */
 @Entity
 public class Reactor {
@@ -23,12 +22,12 @@ public class Reactor {
     /** One of: "ONLINE", "OFFLINE", "MELTDOWN-ISH". Probably. Nobody checks. */
     private String status;
     private Integer thermalOutputMw;
-    private Date lastInspection;
+    private Instant lastInspection;
 
     public Reactor() {
     }
 
-    public Reactor(String name, String sector, String status, Integer thermalOutputMw, Date lastInspection) {
+    public Reactor(String name, String sector, String status, Integer thermalOutputMw, Instant lastInspection) {
         this.name = name;
         this.sector = sector;
         this.status = status;
@@ -46,6 +45,6 @@ public class Reactor {
     public void setStatus(String status) { this.status = status; }
     public Integer getThermalOutputMw() { return thermalOutputMw; }
     public void setThermalOutputMw(Integer thermalOutputMw) { this.thermalOutputMw = thermalOutputMw; }
-    public Date getLastInspection() { return lastInspection; }
-    public void setLastInspection(Date lastInspection) { this.lastInspection = lastInspection; }
+    public Instant getLastInspection() { return lastInspection; }
+    public void setLastInspection(Instant lastInspection) { this.lastInspection = lastInspection; }
 }

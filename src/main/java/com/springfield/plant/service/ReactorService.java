@@ -4,15 +4,13 @@ import com.springfield.plant.model.Reactor;
 import com.springfield.plant.repository.ReactorRepository;
 import com.springfield.plant.util.DateUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Reactor business logic.
- * ☢️ LEGACY ALERT: manual loops instead of streams, boxing with `new Integer(...)`
- * (deprecated since Java 9, removed-ish in modern JDKs), StringBuffer abuse.
  */
 @Service
 public class ReactorService {
@@ -23,52 +21,44 @@ public class ReactorService {
         this.reactorRepository = reactorRepository;
     }
 
+    @Transactional(readOnly = true)
     public List<Reactor> findAll() {
         return reactorRepository.findAll();
     }
 
-    public Reactor findById(Long id) {
-        return reactorRepository.findById(id).orElse(null); // ☢️ null-happy API
+    @Transactional(readOnly = true)
+    public Optional<Reactor> findById(Long id) {
+        return reactorRepository.findById(id);
     }
 
+    @Transactional
     public Reactor save(Reactor reactor) {
         return reactorRepository.save(reactor);
     }
 
-    /** Total thermal output across all ONLINE reactors, the 1998 way. */
+    @Transactional(readOnly = true)
     public Integer totalOnlineOutputMw() {
-        List<Reactor> online = reactorRepository.findByStatus("ONLINE");
-        Integer total = new Integer(0); // ☢️ deprecated boxing ceremony
-        for (int i = 0; i < online.size(); i++) {
-            Reactor r = online.get(i);
-            if (r.getThermalOutputMw() != null) {
-                total = new Integer(total.intValue() + r.getThermalOutputMw().intValue());
-            }
-        }
-        return total;
+        return reactorRepository.findByStatus("ONLINE").stream()
+                .map(Reactor::getThermalOutputMw)
+                .filter(output -> output != null)
+                .mapToInt(Integer::intValue)
+                .sum();
     }
 
-    /** Reactors that have not been inspected within the given number of days. */
+    @Transactional(readOnly = true)
     public List<Reactor> overdueForInspection(int maxDays) {
-        List<Reactor> result = new ArrayList<Reactor>();
-        Date cutoff = DateUtils.daysAgo(maxDays);
-        List<Reactor> all = reactorRepository.findAll();
-        for (int i = 0; i < all.size(); i++) {
-            Reactor r = all.get(i);
-            if (r.getLastInspection() == null || r.getLastInspection().before(cutoff)) {
-                result.add(r);
-            }
-        }
-        return result;
+        var cutoff = DateUtils.daysAgo(maxDays);
+        return reactorRepository.findAll().stream()
+                .filter(reactor -> reactor.getLastInspection() == null || reactor.getLastInspection().isBefore(cutoff))
+                .toList();
     }
 
-    /** Plant status banner, lovingly assembled with StringBuffer. */
+    @Transactional(readOnly = true)
     public String statusBanner() {
-        StringBuffer sb = new StringBuffer(); // ☢️ StringBuffer in single-threaded code
-        sb.append("SNPP STATUS :: ");
-        sb.append(reactorRepository.findByStatus("ONLINE").size()).append(" online / ");
-        sb.append(reactorRepository.findByStatus("MELTDOWN-ISH").size()).append(" melting / ");
-        sb.append(totalOnlineOutputMw()).append(" MW total. Everything is fine.");
-        return sb.toString();
+        return "SNPP STATUS :: %d online / %d melting / %d MW total. Everything is fine."
+                .formatted(
+                        reactorRepository.findByStatus("ONLINE").size(),
+                        reactorRepository.findByStatus("MELTDOWN-ISH").size(),
+                        totalOnlineOutputMw());
     }
 }

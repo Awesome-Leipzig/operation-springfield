@@ -33,11 +33,9 @@ public class ReactorController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Reactor> byId(@PathVariable Long id) {
-        Reactor reactor = reactorService.findById(id);
-        if (reactor == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(reactor);
+        return reactorService.findById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping

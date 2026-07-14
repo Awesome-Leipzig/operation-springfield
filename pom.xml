@@ -4,25 +4,22 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- ☢️ LEGACY ALERT: Spring Boot 2.3 went end-of-life years ago. That is the point. -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.3.12.RELEASE</version>
+        <version>4.0.0</version>
         <relativePath/>
     </parent>
 
     <groupId>com.springfield.plant</groupId>
     <artifactId>sector-7g-safety-ledger</artifactId>
-    <version>0.9.1-LEGACY</version>
+    <version>1.0.0</version>
     <name>Sector 7G Safety Ledger</name>
-    <description>Springfield Nuclear Power Plant safety ledger. Written long ago. Do not touch. (Please touch.)</description>
+    <description>Springfield Nuclear Power Plant safety ledger.</description>
 
     <properties>
-        <!-- ☢️ LEGACY ALERT: Java 8. Upgrade me to 21. -->
-        <java.version>1.8</java.version>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <java.version>21</java.version>
+        <springdoc.version>2.8.9</springdoc.version>
     </properties>
 
     <dependencies>
@@ -44,44 +41,20 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- ☢️ LEGACY ALERT: SpringFox is dead. Boot 3 requires springdoc-openapi. -->
         <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger2</artifactId>
-            <version>2.9.2</version>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
-            <version>2.9.2</version>
-        </dependency>
-
-        <!-- ☢️ CVE BAIT: old versions with known vulnerabilities. Phase 3 fodder. -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-text</artifactId>
-            <version>1.8</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-collections</groupId>
-            <artifactId>commons-collections</artifactId>
-            <version>3.2.1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>20.0</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <!-- ☢️ LEGACY ALERT: JUnit 4 tests. Migrate to JUnit 5. -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

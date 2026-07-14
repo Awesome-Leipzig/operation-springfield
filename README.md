@@ -1,7 +1,7 @@
 # ☢️ Sector 7G Safety Ledger
 
-The Springfield Nuclear Power Plant's safety ledger — a **deliberately legacy**
-Java 8 / Spring Boot 2.3 app. It is the "victim app" for
+The Springfield Nuclear Power Plant's safety ledger — modernized to
+Java 21 / Spring Boot 4. It is the "victim app" for
 **[Operation Fresh Brew](HACKATHON.md)**, an 8-hour GitHub Copilot Java
 modernization hackathon.
 
@@ -16,9 +16,9 @@ modernization hackathon.
 | [tracker.html](tracker.html) | Live progress tracker — open it on the big screen, no server needed |
 | `src/` | The legacy app you'll modernize |
 
-## Run the legacy app (before you fix it)
+## Run the app
 
-**Prereqs:** JDK 8 or 11, Maven 3.6+ — the full hackathon toolchain (VS Code ≥ 1.113,
+**Prereqs:** JDK 21, Maven 3.9+ — the full hackathon toolchain (VS Code ≥ 1.113,
 GitHub Copilot + the **GitHub Copilot app modernization** extension
 (`vscjava.migrate-java-to-azure`), Docker, `az`, `azd`, and the optional Copilot CLI
 `modernize-java` plugin) is listed in
@@ -36,13 +36,27 @@ Then:
 | http://localhost:8080/api/reactors | Reactor REST API |
 | http://localhost:8080/api/incidents | Safety incidents |
 | http://localhost:8080/api/incidents/donuts | A critical plant KPI 🍩 |
-| http://localhost:8080/swagger-ui.html | SpringFox Swagger UI (doomed in Boot 3) |
+| http://localhost:8080/swagger-ui/index.html | OpenAPI Swagger UI |
 | http://localhost:8080/h2-console | H2 console |
 
-Run the (JUnit 4) tests:
+Run the tests:
 
 ```bash
 mvn test
+```
+
+## Containerize and deploy to Azure Container Apps
+
+Build the container image:
+
+```bash
+docker build -t sector-7g-safety-ledger:latest .
+```
+
+Deploy with `az containerapp` using the provided manifest:
+
+```bash
+az containerapp create --yaml azure-container-app.yaml
 ```
 
 ## The planted modernization targets
@@ -51,15 +65,15 @@ This app is a trap, on purpose. Your Copilot-powered mission:
 
 | Smell | Where | Fix (Phase) |
 |---|---|---|
-| Java 8 + Spring Boot 2.3 (EOL) | `pom.xml` | Upgrade to Java 25 + Boot 4.x (Phase 2) |
-| `javax.persistence` / `javax.servlet` | entities, `LegacyAuditFilter` | `jakarta.*` (Phase 2) |
-| SpringFox 2.9 | `SwaggerConfig` | springdoc-openapi (Phase 2) |
-| JUnit 4 + `SpringRunner` | `src/test` | JUnit 5 (Phase 2) |
-| `new Integer(...)`, `Hashtable`, `StringBuffer` | services | Modern Java (Phase 2) |
-| Static shared `SimpleDateFormat` (not thread-safe) | `DateUtils` | `java.time` (Phase 2) |
-| CVE-laden deps: commons-text 1.8, commons-collections 3.2.1, guava 20 | `pom.xml` | Bump/remove (Phase 3) |
-| Hardcoded credentials (fake) | `SecretConstants`, `application.properties` | Managed identity / env config (Phase 3) |
-| `System.out` logging | `LegacyAuditFilter`, `DataLoader` | SLF4J + App Insights (Phase 4–5) |
+| Java 8 + Spring Boot 2.3 (EOL) | `pom.xml` | Upgraded to Java 21 + Boot 4.x |
+| `javax.persistence` / `javax.servlet` | entities, `LegacyAuditFilter` | Migrated to `jakarta.*` |
+| SpringFox 2.9 | `SwaggerConfig` | Replaced with springdoc-openapi |
+| JUnit 4 + `SpringRunner` | `src/test` | Migrated to JUnit 5 |
+| `new Integer(...)`, `Hashtable`, `StringBuffer` | services | Replaced with modern Java patterns |
+| Static shared `SimpleDateFormat` (not thread-safe) | `DateUtils` | Replaced with `java.time` |
+| CVE-laden deps: commons-text 1.8, commons-collections 3.2.1, guava 20 | `pom.xml` | Removed |
+| Hardcoded credentials (fake) | `SecretConstants`, `application.properties` | Replaced with env/Key Vault configuration |
+| `System.out` logging | `LegacyAuditFilter`, `DataLoader` | Replaced with SLF4J |
 | H2 in-memory "production" DB | `application.properties` | Azure database (Phase 4) |
 
 ## How to run the hackathon

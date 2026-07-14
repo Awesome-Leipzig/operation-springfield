@@ -7,6 +7,8 @@ import com.springfield.plant.repository.EmployeeRepository;
 import com.springfield.plant.repository.IncidentRepository;
 import com.springfield.plant.repository.ReactorRepository;
 import com.springfield.plant.util.DateUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +17,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class DataLoader implements CommandLineRunner {
+
+    private static final Logger log = LoggerFactory.getLogger(DataLoader.class);
 
     private final ReactorRepository reactors;
     private final IncidentRepository incidents;
@@ -49,7 +53,7 @@ public class DataLoader implements CommandLineRunner {
         incidents.save(new SafetyIncident(core3, "glowing rat spotted near turbine hall", 4,
                 "Waylon Smithers", DateUtils.daysAgo(2), 1));
 
-        System.out.println("[BOOT] Sector 7G Safety Ledger loaded. " + reactors.count()
-                + " reactors, " + incidents.count() + " incidents. Everything is fine.");
+        log.info("Sector 7G Safety Ledger loaded. {} reactors, {} incidents. Everything is fine.",
+                reactors.count(), incidents.count());
     }
 }

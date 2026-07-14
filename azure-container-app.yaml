@@ -1,0 +1,38 @@
+location: ${AZURE_LOCATION}
+name: ${CONTAINER_APP_NAME}
+resourceGroup: ${AZURE_RESOURCE_GROUP}
+type: Microsoft.App/containerApps
+properties:
+  managedEnvironmentId: ${AZURE_CONTAINERAPPS_ENVIRONMENT_ID}
+  configuration:
+    ingress:
+      external: true
+      targetPort: 8080
+    secrets:
+      - name: datasource-username
+        keyVaultUrl: ${KEYVAULT_SECRET_DATASOURCE_USERNAME_URL}
+        identity: system
+      - name: datasource-password
+        keyVaultUrl: ${KEYVAULT_SECRET_DATASOURCE_PASSWORD_URL}
+        identity: system
+      - name: plant-api-key
+        keyVaultUrl: ${KEYVAULT_SECRET_PLANT_API_KEY_URL}
+        identity: system
+  template:
+    containers:
+      - image: ${AZURE_CONTAINER_IMAGE}
+        name: sector-7g-safety-ledger
+        env:
+          - name: SPRING_DATASOURCE_URL
+            value: ${SPRING_DATASOURCE_URL}
+          - name: SPRING_DATASOURCE_USERNAME
+            secretRef: datasource-username
+          - name: SPRING_DATASOURCE_PASSWORD
+            secretRef: datasource-password
+          - name: PLANT_API_KEY
+            secretRef: plant-api-key
+          - name: SERVER_PORT
+            value: "8080"
+    scale:
+      minReplicas: 1
+      maxReplicas: 3

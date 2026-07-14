@@ -1,16 +1,16 @@
 package com.springfield.plant.model;
 
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import java.util.Date;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+
+import java.time.Instant;
 
 /**
  * A safety incident. There are many.
- * ☢️ LEGACY ALERT: javax.persistence, java.util.Date, severity as int (1..5, undocumented).
  */
 @Entity
 public class SafetyIncident {
@@ -25,14 +25,14 @@ public class SafetyIncident {
     private String description;
     private int severity;
     private String reportedBy;
-    private Date reportedAt;
+    private Instant reportedAt;
     private int donutsConsumedDuringIncident;
 
     public SafetyIncident() {
     }
 
     public SafetyIncident(Reactor reactor, String description, int severity,
-                          String reportedBy, Date reportedAt, int donuts) {
+                          String reportedBy, Instant reportedAt, int donuts) {
         this.reactor = reactor;
         this.description = description;
         this.severity = severity;
@@ -51,8 +51,8 @@ public class SafetyIncident {
     public void setSeverity(int severity) { this.severity = severity; }
     public String getReportedBy() { return reportedBy; }
     public void setReportedBy(String reportedBy) { this.reportedBy = reportedBy; }
-    public Date getReportedAt() { return reportedAt; }
-    public void setReportedAt(Date reportedAt) { this.reportedAt = reportedAt; }
+    public Instant getReportedAt() { return reportedAt; }
+    public void setReportedAt(Instant reportedAt) { this.reportedAt = reportedAt; }
     public int getDonutsConsumedDuringIncident() { return donutsConsumedDuringIncident; }
     public void setDonutsConsumedDuringIncident(int d) { this.donutsConsumedDuringIncident = d; }
 }

@@ -1,19 +1,15 @@
 package com.springfield.plant;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
-/**
- * ☢️ LEGACY ALERT: JUnit 4 + SpringRunner. Migrate to JUnit 5.
- */
-@RunWith(SpringRunner.class)
 @SpringBootTest
 public class PlantApplicationTests {
 
     @Test
-    public void contextLoads() {
+    @DisplayName("shouldLoadContext_whenApplicationStarts")
+    void shouldLoadContext_whenApplicationStarts() {
         // If this fails, evacuate calmly.
     }
 }
