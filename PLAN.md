@@ -3,13 +3,59 @@
 Source of truth for tasks: `tracker.html` (26 tracker line items across Phase 2–6 + Side
 Quests; Phase 1 is explicitly excluded per instructions — it is already checked off).
 
-## ✅ Phase 4 deployed live — status update
+## ✅ All subagent-doable work complete — final status
 
 Following the pause, the user granted Owner access on `rg-swo-gh-hackathon-team2` and
-asked for the app to be deployed there. **All of Phase 4 is now done** (250/250 pts).
-**18 of 26 tracker items are done**, **3 are correctly blocked** (live demo, retro,
-and Prompt Golf — human/team-only activities), **5 remain (leftover tasks, all
-unblocked)**. Reactor Core score: **780 / 1,150 pts**. Phases 2, 3, 4, 5 are all 100%.
+asked for the app to be deployed there (done), then asked to continue through the
+remaining leftovers (also done). **23 of 26 tracker items are done**, **3 are
+correctly blocked** (live demo, retro, and Prompt Golf — human/team-only activities
+with prep materials ready: `DEMO-SCRIPT.md`, `RETRO-TEMPLATE.md`). Reactor Core
+score: **1,050 / 1,150 pts** (only the 3 human-only items remain unchecked).
+Phases 2, 3, 4, 5 are 100%; Phase 6 is 30% (one-pager done); Side Quests are 80%
+(everything but the team vote).
+
+### 🎉 Side Quests + Phase 6 one-pager completed
+- **Testcontainers**: `ReactorRepositoryPostgresIT` proves the JPA layer against a
+  real `postgres:16-alpine` container; required adding `spring-boot-testcontainers`
+  + `testcontainers-postgresql` (Testcontainers 2.x renamed all module artifacts
+  with a `testcontainers-` prefix) and `maven-failsafe-plugin` so `*IT.java` classes
+  actually run during `mvn verify` (Surefire ignores them by naming convention).
+- **New feature in <30 min**: `POST /api/reactors/{id}/inspect` — stamps
+  `lastInspection = now()`, 404 on unknown id, 5 new tests, manually verified live.
+- **Azure cost estimate + optimization**: pulled real pricing from the Azure Retail
+  Prices API for the actual deployed SKUs (~$67–69/month) — see
+  `COST-ESTIMATE.md`. Applied scale-to-zero on the Container App (`minReplicas: 0`
+  + HTTP concurrency rule), the single largest cost driver (~$39/month, over half
+  the bill) — new estimate ~$28–30/month. Applied and verified against the live
+  deployment.
+- **`MODERNIZATION.md`**: a teammate had already started this (Phase 2/3 only,
+  tracked with a stray `.MD` casing that would have been a broken-link risk on
+  GitHub's case-sensitive storage — fixed) — updated in place with the full
+  Phase 4–6 + Side Quests journey rather than duplicating it.
+- **`ONE-PAGER.md`**: before/after with real numbers — versions, 1 real CVE fixed,
+  82 files / 6,168 insertions since the legacy seed commit, 32 tests, live endpoint
+  + load-test + cost numbers.
+- **Prep materials for the two human Phase 6 items**: `DEMO-SCRIPT.md` (10-minute
+  flow) and `RETRO-TEMPLATE.md` (fill-in-the-blanks for the team retro).
+
+### 🐛 A shared-repo hiccup along the way
+GitHub CI failed on `LegacyAuditFilterTest` after a teammate's agent
+(`copilot-swe-agent[bot]`) added real API-key enforcement to `LegacyAuditFilter`
+and then a follow-up commit reverted it back to audit-only — without updating the
+test to match. Fixed by aligning the test with the actual current (audit-only)
+behavior rather than re-adding the enforcement unilaterally, since that revert was
+someone else's deliberate call; flagged it for the team to resolve (TRIAGE.md S7 is
+still open). See `MODERNIZATION.md`'s "Important note for next year" section.
+
+### 🔒 Remaining (human-only, not applicable to a subagent loop)
+
+| Task | Status |
+|---|---|
+| `p6-live-demo` | Prep done (`DEMO-SCRIPT.md`); humans present using the live endpoint. |
+| `p6-retro` | Prep done (`RETRO-TEMPLATE.md`); humans fill in during the retro. |
+| `sq-prompt-golf` | Team vote — not applicable to the subagent loop. |
+
+## Problem statement
 
 ### 🚀 Live deployment details
 - **Resource group**: `rg-swo-gh-hackathon-team2` (Germany West Central), pre-existing —
@@ -47,23 +93,6 @@ unblocked)**. Reactor Core score: **780 / 1,150 pts**. Phases 2, 3, 4, 5 are all
    corporate proxy — worked around by using native PowerShell (`Invoke-RestMethod`
    with `az account get-access-token`) instead of `az containerapp logs show` /
    `az monitor log-analytics query`, which respects the Windows trusted cert store.
-
-### 🔧 Leftover tasks (not yet done — resume here)
-
-| Task | Why it's left | Notes for resuming |
-|---|---|---|
-| `p6-live-demo` | 🔒 Human activity (subagent already scoped to prep materials only). | Prepare a short demo script/talking points; the live URL above is ready to demo. Humans present. |
-| `p6-one-pager` | Not started — but fully unblocked (all inputs — `CVE-SCAN.md`, `UPGRADE-SUMMARY.md`, git history, live deployment details above — already exist). | Pull real numbers: versions (`pom.xml` diff), CVE counts (`CVE-SCAN.md`), LOC changed (`git diff --stat`), % done by Copilot (see `UPGRADE-SUMMARY.md`), live endpoint + load-test numbers from this section. |
-| `p6-retro` | 🔒 Human activity (subagent already scoped to draft a template only). | Draft a retro template (Copilot wins / gotchas / best prompt) for the team to fill in. |
-| `sq-testcontainers` | Not started. | Add `spring-boot-testcontainers` + a Postgres Testcontainers integration test. |
-| `sq-new-feature` | Not started. | Small scoped feature, e.g. `/api/reactors/{id}/inspect`. |
-| `sq-cost-estimate` | Not started; depends on `p4-iac-azd` (done) — now unblocked, and the real resources exist to estimate against. | Estimate cost of the live `rg-swo-gh-hackathon-team2` resources via Azure Pricing Calculator or Cost Management; apply one optimization (e.g. scale-to-zero on the Container App, since it's a hackathon/dev workload). |
-| `sq-modernization-md` | Not started; depends on `p2-upgrade-summary` (done) — now unblocked. | Write `MODERNIZATION.md`, drawing on `UPGRADE-SUMMARY.md`, `CVE-SCAN.md`, `TRIAGE.md`, and the live deployment section above. |
-| `sq-prompt-golf` | 🔒 Human/team activity — not applicable to the subagent loop. | N/A. |
-
-**To resume**: continue the Phase 6 + Side Quests loop for the non-blocked items above
-(one-pager, Testcontainers, new feature, cost estimate, MODERNIZATION.md); the demo
-and retro are ready for humans to run using the live endpoint whenever convenient.
 
 ## Problem statement
 
