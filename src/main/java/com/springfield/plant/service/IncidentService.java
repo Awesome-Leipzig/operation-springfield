@@ -72,9 +72,6 @@ public class IncidentService {
         var words = text.trim().split("\\s+");
         var normalizedWords = new ArrayList<String>(words.length);
         for (var word : words) {
-            if (word.isEmpty()) {
-                continue;
-            }
             normalizedWords.add(word.substring(0, 1).toUpperCase() + word.substring(1).toLowerCase());
         }
         return String.join(" ", normalizedWords);
