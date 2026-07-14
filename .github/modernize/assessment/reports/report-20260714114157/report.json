@@ -1,0 +1,178 @@
+{
+  "version": "1.0.0",
+  "producer": "Java AppCAT CLI",
+  "metadata": {
+    "analysisStartTime": "2026-07-14T09:41:58.036Z",
+    "analysisEndTime": "2026-07-14T09:45:52.722Z",
+    "privacyMode": "Protected",
+    "privacyModeHelpUrl": "https://aka.ms/appmod-privacy-mode",
+    "targetIds": [
+      "azure-aks",
+      "azure-appservice",
+      "azure-container-apps"
+    ],
+    "targetDisplayNames": [
+      "Azure Kubernetes Service",
+      "Azure App Service",
+      "Azure Container Apps"
+    ],
+    "capabilities": [
+      "openjdk25"
+    ],
+    "os": [
+      "windows",
+      "linux"
+    ],
+    "id": "20260714114157",
+    "name": "Report_20260714114157",
+    "status": "completed",
+    "domains": [
+      "security"
+    ],
+    "mode": "issue-only",
+    "minimumCveSeverity": "high",
+    "cveScanScope": "direct"
+  },
+  "summary": {
+    "totalProjects": 1,
+    "totalIssues": 0,
+    "totalIncidents": 0,
+    "totalEffort": 0,
+    "charts": {
+      "severity": {
+        "mandatory": 0,
+        "optional": 0,
+        "potential": 0,
+        "information": 0
+      },
+      "category": {}
+    }
+  },
+  "projects": [
+    {
+      "path": ".",
+      "issues": 0,
+      "storyPoints": 0,
+      "properties": {
+        "appName": "sector-7g-safety-ledger",
+        "jdkVersion": "21",
+        "frameworks": [
+          "Spring Boot",
+          "Spring"
+        ],
+        "languages": [
+          "Java"
+        ],
+        "tools": [
+          "Maven"
+        ]
+      },
+      "incidents": []
+    }
+  ],
+  "rules": {},
+  "security": [
+    {
+      "id": "CWE-456",
+      "title": "Missing Initialization of a Variable",
+      "category": "Code Quality",
+      "severity": "potential",
+      "description": "The product does not initialize critical variables, which causes the execution environment to use unexpected values.",
+      "evidence": {
+        "files": [
+          "src/main/java/com/springfield/plant/model/SafetyIncident.java",
+          "src/main/java/com/springfield/plant/web/IncidentController.java"
+        ],
+        "explanation": "SafetyIncident no-arg constructor (used by JPA/Jackson deserialization) leaves severity, reportedBy, and description without explicit initialization. IncidentController.report() only checks reportedAt for null; severity, description, and reportedBy are never validated or defaulted before the entity is persisted, allowing silent 0-severity incidents and null string fields."
+      },
+      "storyPoint": 2
+    },
+    {
+      "id": "CWE-570",
+      "title": "Expression is Always False",
+      "category": "Code Quality",
+      "severity": "optional",
+      "description": "The product contains an expression that will always evaluate to false.",
+      "evidence": {
+        "files": [
+          "src/main/java/com/springfield/plant/service/IncidentService.java"
+        ],
+        "explanation": "IncidentService.capitalizeWords(): the guard condition 'if (word.isEmpty()) { continue; }' is always false. The method already checks 'text.isBlank()' and applies 'text.trim()' before calling 'split(\"\\\\s+\")'. Splitting a trimmed, non-blank string on one-or-more whitespace characters cannot produce empty tokens, so the isEmpty() branch is dead code."
+      },
+      "storyPoint": 1
+    },
+    {
+      "id": "CWE-665",
+      "title": "Improper Initialization",
+      "category": "Code Quality",
+      "severity": "potential",
+      "description": "The product does not initialize or incorrectly initializes a resource, which might leave the resource in an unexpected state when it is accessed or used.",
+      "evidence": {
+        "files": [
+          "src/main/java/com/springfield/plant/web/ReactorController.java",
+          "src/main/java/com/springfield/plant/web/IncidentController.java"
+        ],
+        "explanation": "ReactorController.create() accepts a Reactor from JSON with zero validation; the comment explicitly notes 'zero validation. Negative megawatts? Sure, why not.' Fields name, sector, status, and thermalOutputMw are never checked before the entity is saved. Only lastInspection receives a default. IncidentController.report() similarly persists a SafetyIncident with no constraints on severity (can be 0 or negative), description (can be null), or reportedBy (can be null)."
+      },
+      "storyPoint": 3
+    },
+    {
+      "id": "CWE-682",
+      "title": "Incorrect Calculation",
+      "category": "Code Quality",
+      "severity": "potential",
+      "description": "The product performs a calculation that generates incorrect or unintended results that are later used in security-critical decisions or resource management.",
+      "evidence": {
+        "files": [
+          "src/main/java/com/springfield/plant/service/ReactorService.java",
+          "src/main/java/com/springfield/plant/service/IncidentService.java"
+        ],
+        "explanation": "ReactorService.totalOnlineOutputMw() sums Integer thermalOutputMw values via mapToInt().sum(), which returns a plain int. If the aggregate of online reactor outputs exceeds Integer.MAX_VALUE (2,147,483,647), the result silently wraps around to a negative number and is returned as the official MW total. IncidentService.totalDonuts() has the same pattern, summing int donutsConsumedDuringIncident values with no overflow protection."
+      },
+      "storyPoint": 5
+    },
+    {
+      "id": "CWE-1057",
+      "title": "Data Access Operations Outside of Expected Data Manager Component",
+      "category": "Code Quality",
+      "severity": "potential",
+      "description": "The product uses a dedicated, central data manager component as required by design, but it contains code that performs data-access operations that do not use this data manager.",
+      "evidence": {
+        "files": [
+          "src/main/java/com/springfield/plant/bootstrap/DataLoader.java"
+        ],
+        "explanation": "DataLoader directly injects and calls ReactorRepository, IncidentRepository, and EmployeeRepository, bypassing the designated service layer (ReactorService, IncidentService, EmployeeService). All three repositories are used raw without going through the service components that enforce business rules (e.g. capitalizeWords normalization in IncidentService, lastInspection defaulting in ReactorService). This violates the architecture's data manager boundary."
+      },
+      "storyPoint": 5
+    },
+    {
+      "id": "CWE-732",
+      "title": "Incorrect Permission Assignment for Critical Resource",
+      "category": "Credentials & Secrets",
+      "severity": "optional",
+      "description": "The product specifies permissions for a security-critical resource in a way that allows that resource to be read or modified by unintended actors.",
+      "evidence": {
+        "files": [
+          "src/main/java/com/springfield/plant/config/LegacyAuditFilter.java"
+        ],
+        "explanation": "LegacyAuditFilter.doFilter() calls plantSecurityProperties.apiKeyConfigured() only to log its boolean result but never uses it to allow or reject the request. Every inbound request is forwarded unconditionally via chain.doFilter(), meaning all safety-critical endpoints (e.g. POST /api/incidents, all /api/reactors writes) are accessible to any unauthenticated actor regardless of whether an API key is configured."
+      },
+      "storyPoint": 5
+    },
+    {
+      "id": "CWE-778",
+      "title": "Insufficient Logging",
+      "category": "Credentials & Secrets",
+      "severity": "potential",
+      "description": "When a security-critical event occurs, the product either does not record the event or omits important details about the event when logging it.",
+      "evidence": {
+        "files": [
+          "src/main/java/com/springfield/plant/service/IncidentService.java",
+          "src/main/java/com/springfield/plant/service/ReactorService.java"
+        ],
+        "explanation": "IncidentService.report() persists a new SafetyIncident to the database with no log statement. ReactorService.save() persists reactor state changes with no log statement. Both are security-critical write operations; no SLF4J logger is declared in either class, so these state-mutating events leave no audit trail in the application logs."
+      },
+      "storyPoint": 3
+    }
+  ]
+}

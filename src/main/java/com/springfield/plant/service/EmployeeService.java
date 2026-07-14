@@ -26,4 +26,9 @@ public class EmployeeService {
     public Optional<Employee> findByName(String name) {
         return employeeRepository.findByName(name);
     }
+
+    @Transactional
+    public Employee save(Employee employee) {
+        return employeeRepository.save(employee);
+    }
 }
