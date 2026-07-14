@@ -51,7 +51,7 @@ This app is a trap, on purpose. Your Copilot-powered mission:
 
 | Smell | Where | Fix (Phase) |
 |---|---|---|
-| Java 8 + Spring Boot 2.3 (EOL) | `pom.xml` | Upgrade to Java 21 + Boot 3.x (Phase 2) |
+| Java 8 + Spring Boot 2.3 (EOL) | `pom.xml` | Upgrade to Java 25 + Boot 4.x (Phase 2) |
 | `javax.persistence` / `javax.servlet` | entities, `LegacyAuditFilter` | `jakarta.*` (Phase 2) |
 | SpringFox 2.9 | `SwaggerConfig` | springdoc-openapi (Phase 2) |
 | JUnit 4 + `SpringRunner` | `src/test` | JUnit 5 (Phase 2) |
