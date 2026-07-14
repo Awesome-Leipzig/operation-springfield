@@ -76,7 +76,7 @@ class IncidentControllerTest {
     @Test
     @DisplayName("shouldReturnDonutTotal_whenRequested")
     void shouldReturnDonutTotal_whenRequested() throws Exception {
-        when(incidentService.totalDonuts()).thenReturn(21);
+        when(incidentService.totalDonuts()).thenReturn(21L);
 
         mockMvc.perform(get("/api/incidents/donuts"))
                 .andExpect(status().isOk())
