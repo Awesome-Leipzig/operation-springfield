@@ -2,6 +2,7 @@ package com.springfield.plant.web;
 
 import com.springfield.plant.model.SafetyIncident;
 import com.springfield.plant.service.IncidentService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,7 +32,7 @@ public class IncidentController {
     }
 
     @PostMapping
-    public SafetyIncident report(@RequestBody SafetyIncident incident) {
+    public SafetyIncident report(@Valid @RequestBody SafetyIncident incident) {
         if (incident.getReportedAt() == null) {
             incident.setReportedAt(Instant.now());
         }

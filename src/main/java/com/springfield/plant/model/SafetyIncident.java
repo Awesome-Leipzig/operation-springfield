@@ -6,6 +6,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.Instant;
 
@@ -22,8 +25,13 @@ public class SafetyIncident {
     @ManyToOne(fetch = FetchType.EAGER) // ☢️ EAGER everything. What could go wrong?
     private Reactor reactor;
 
+    @NotBlank(message = "description must not be blank")
     private String description;
+
+    @Min(value = 1, message = "severity must be at least 1")
     private int severity;
+
+    @NotBlank(message = "reportedBy must not be blank")
     private String reportedBy;
     private Instant reportedAt;
     private int donutsConsumedDuringIncident;

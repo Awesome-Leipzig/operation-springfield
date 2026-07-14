@@ -4,6 +4,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.Instant;
 
@@ -17,10 +20,18 @@ public class Reactor {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "name must not be blank")
     private String name;
+
+    @NotBlank(message = "sector must not be blank")
     private String sector;
-    /** One of: "ONLINE", "OFFLINE", "MELTDOWN-ISH". Probably. Nobody checks. */
+
+    /** One of: "ONLINE", "OFFLINE", "MELTDOWN-ISH". */
+    @NotBlank(message = "status must not be blank")
     private String status;
+
+    @NotNull(message = "thermalOutputMw must not be null")
+    @Min(value = 0, message = "thermalOutputMw must not be negative")
     private Integer thermalOutputMw;
     private Instant lastInspection;
 
