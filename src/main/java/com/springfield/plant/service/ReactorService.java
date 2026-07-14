@@ -3,6 +3,8 @@ package com.springfield.plant.service;
 import com.springfield.plant.model.Reactor;
 import com.springfield.plant.repository.ReactorRepository;
 import com.springfield.plant.util.DateUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +16,8 @@ import java.util.Optional;
  */
 @Service
 public class ReactorService {
+
+    private static final Logger log = LoggerFactory.getLogger(ReactorService.class);
 
     private final ReactorRepository reactorRepository;
 
@@ -33,7 +37,14 @@ public class ReactorService {
 
     @Transactional
     public Reactor save(Reactor reactor) {
-        return reactorRepository.save(reactor);
+        Reactor saved = reactorRepository.save(reactor);
+        log.info("AUDIT: reactor persisted id={} name={} sector={} status={} thermalOutputMw={}",
+                saved.getId(),
+                saved.getName(),
+                saved.getSector(),
+                saved.getStatus(),
+                saved.getThermalOutputMw());
+        return saved;
     }
 
     @Transactional(readOnly = true)

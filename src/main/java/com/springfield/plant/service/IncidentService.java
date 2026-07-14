@@ -2,6 +2,8 @@ package com.springfield.plant.service;
 
 import com.springfield.plant.model.SafetyIncident;
 import com.springfield.plant.repository.IncidentRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +17,8 @@ import java.util.Map;
  */
 @Service
 public class IncidentService {
+
+    private static final Logger log = LoggerFactory.getLogger(IncidentService.class);
 
     private final IncidentRepository incidentRepository;
 
@@ -30,7 +34,13 @@ public class IncidentService {
     @Transactional
     public SafetyIncident report(SafetyIncident incident) {
         incident.setDescription(capitalizeWords(incident.getDescription()));
-        return incidentRepository.save(incident);
+        SafetyIncident saved = incidentRepository.save(incident);
+        log.info("AUDIT: safety incident persisted id={} reactorId={} severity={} reportedBy={}",
+                saved.getId(),
+                saved.getReactor() != null ? saved.getReactor().getId() : null,
+                saved.getSeverity(),
+                saved.getReportedBy());
+        return saved;
     }
 
     @Transactional(readOnly = true)
