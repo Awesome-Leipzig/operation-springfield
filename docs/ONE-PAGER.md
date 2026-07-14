@@ -28,19 +28,19 @@
 
 ## Scale of the change
 
-- **82 files changed, 6,168 insertions / 375 deletions** since the legacy seed
+- **108 files changed, 10,038 insertions / 376 deletions** since the legacy seed
   commit (`git diff --shortstat d64cdf6 HEAD`).
-- **38 commits**, **8 contributors** (mixed human + AI-agent team).
+- **51 commits**, **8 contributors** (mixed human + AI-agent team).
 - **Tests: 0 → 32** (unit, `@WebMvcTest` slices, and a real Testcontainers
   PostgreSQL integration test).
 
 ## % done by Copilot
 
 Git authorship shows 3 commits directly by `copilot-swe-agent[bot]` (the GitHub
-Copilot coding agent) and 2 more explicitly co-authored by the Copilot CLI — but
-that undercounts the real picture: per the hackathon's own premise
-([HACKATHON.md](HACKATHON.md)), every human contributor was themselves driving
-Copilot Chat, the app modernization VS Code extension, or the Copilot CLI
+Copilot coding agent) and 8 more explicitly co-authored by Copilot Chat or the
+Copilot CLI — but that still undercounts the real picture: per the hackathon's own
+premise ([HACKATHON.md](HACKATHON.md)), every human contributor was themselves
+driving Copilot Chat, the app modernization VS Code extension, or the Copilot CLI
 throughout. The mechanical migration work (namespace rewrites, dependency bumps,
 test scaffolding, Bicep IaC authoring, Dockerfile, CI workflow) was Copilot-driven
 essentially end to end; the judgment calls (which CVE fix to apply, whether to keep
