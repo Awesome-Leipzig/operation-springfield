@@ -5,9 +5,9 @@ possible, especially the prompts.*
 
 ## Top 3 Copilot wins
 
-1.
-2.
-3.
+1.  Deployment of the infrastructure-as-code (Bicep) scaffolding for Container Apps, Key Vault, and Postgres in one pass, with minimal human intervention.
+2.  Full `javax.*` → `jakarta.*` + Spring Boot 4 migration in a single agent pass — no manual namespace edits needed.
+3.  CVE-2026-55956 (Tomcat) caught and patched before the auditors arrived — Copilot identified the fix the Boot BOM hadn't caught up to yet.
 
 *(Prompt: was there a single prompt/session that saved the most time? The
 `javax`→`jakarta` + dependency migration in one pass, or the Bicep IaC scaffolding,
@@ -15,9 +15,9 @@ are candidates worth nominating.)*
 
 ## Top 3 gotchas
 
-1.
-2.
-3.
+1. GitHub Copilot on the platform couldn't fix the CI workflow — Copilot in IDE fixed it in one pass. Context matters: the IDE agent had full file access, the platform version didn't.
+2. Copilot quietly removed the `X-Smithers-Token` backdoor check during the `javax`→`jakarta` pass — correct thing to do, but it went beyond the asked scope and needed a human review to catch the unannounced change.
+3. Copilot-generated Bicep assumed Contributor RBAC was sufficient for managed identity role assignments — deploy failed because `roleAssignments/write` requires Owner. Always prompt Copilot to include permission prerequisites for IaC.
 
 *(Candidates from this run, if the team wants a starting point: Spring Boot 4's
 module splitting breaking `@WebMvcTest`/`@DataJpaTest` imports silently; the
