@@ -269,8 +269,24 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
         }
       ]
       scale: {
-        minReplicas: 1
+        // Cost optimization (Side Quest): hackathon/dev workload doesn't need 24/7
+        // uptime. Scale-to-zero when idle instead of always running >=1 replica —
+        // this alone was the single largest line item in the cost estimate
+        // (~$39/month for an always-on 0.5 vCPU / 1Gi replica). An HTTP concurrency
+        // rule brings a replica back up on the next request (cold start adds a few
+        // seconds of latency, acceptable for this workload). See COST-ESTIMATE.md.
+        minReplicas: 0
         maxReplicas: 3
+        rules: [
+          {
+            name: 'http-scale-rule'
+            http: {
+              metadata: {
+                concurrentRequests: '10'
+              }
+            }
+          }
+        ]
       }
     }
   }

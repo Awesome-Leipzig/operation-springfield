@@ -56,4 +56,11 @@ public class ReactorController {
     public List<Reactor> overdue() {
         return reactorService.overdueForInspection(90);
     }
+
+    @PostMapping("/{id}/inspect")
+    public ResponseEntity<Reactor> inspect(@PathVariable Long id) {
+        return reactorService.inspect(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
 }

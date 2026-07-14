@@ -8,8 +8,10 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -50,5 +52,27 @@ class ReactorServiceTest {
         when(repository.findByStatus(anyString())).thenReturn(List.of());
 
         assertThat(service.statusBanner()).contains("Everything is fine.");
+    }
+
+    @Test
+    @DisplayName("shouldUpdateLastInspection_whenReactorExists")
+    void shouldUpdateLastInspection_whenReactorExists() {
+        var reactor = new Reactor("Old Bessie", "7G", "ONLINE", 480, null);
+        reactor.setId(1L);
+        when(repository.findById(1L)).thenReturn(Optional.of(reactor));
+        when(repository.save(any(Reactor.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        var inspected = service.inspect(1L);
+
+        assertThat(inspected).isPresent();
+        assertThat(inspected.get().getLastInspection()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("shouldReturnEmpty_whenInspectingUnknownReactor")
+    void shouldReturnEmpty_whenInspectingUnknownReactor() {
+        when(repository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThat(service.inspect(99L)).isEmpty();
     }
 }

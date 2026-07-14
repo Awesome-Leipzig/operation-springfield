@@ -361,16 +361,18 @@ const STATUS = [
 ];
 
 // ---------- state ----------
-// Reflects verified progress through Phase 5 (see UPGRADE-SUMMARY.md, CVE-SCAN.md,
-// LOAD-TEST-RESULTS.md, and infra/). Phase 4 is now fully done: deployed live to
-// rg-swo-gh-hackathon-team2 via `azd provision` + `azd deploy`, Postgres connected
-// passwordlessly via managed identity, smoke/load tests and telemetry validated
-// against the live endpoint.
+// Reflects verified progress through Phases 2-5, live Azure deployment, and all
+// subagent-doable Side Quests / Phase 6 items (see MODERNIZATION.md, ONE-PAGER.md,
+// COST-ESTIMATE.md). Only p6a (live demo) and p6c (retro) remain unchecked — draft
+// materials are prepped (DEMO-SCRIPT.md, RETRO-TEMPLATE.md) but humans must present/
+// fill them in. sqa (Prompt Golf) is a team vote, not applicable to the loop.
 const DEFAULT_DONE = {
   p2a: true, p2b: true, p2c: true, p2d: true, p2e: true,
   p3a: true, p3b: true, p3c: true, p3d: true,
   p4a: true, p4b: true, p4c: true, p4d: true, p4e: true,
   p5a: true, p5b: true, p5c: true, p5d: true,
+  p6b: true,
+  sqb: true, sqc: true, sqd: true, sqe: true,
 };
 let state = { done: { ...DEFAULT_DONE }, squads: {}, timer: { running: false, remaining: SHIFT_SECONDS, lastTick: null } };
 try {

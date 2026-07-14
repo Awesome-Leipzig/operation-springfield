@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,6 +46,21 @@ public class ReactorService {
                 saved.getStatus(),
                 saved.getThermalOutputMw());
         return saved;
+    }
+
+    /**
+     * Side Quest: records a reactor inspection right now, clearing it off the
+     * overdue list. Returns empty if no reactor exists with that id.
+     */
+    @Transactional
+    public Optional<Reactor> inspect(Long id) {
+        return reactorRepository.findById(id).map(reactor -> {
+            reactor.setLastInspection(Instant.now());
+            Reactor saved = reactorRepository.save(reactor);
+            log.info("AUDIT: reactor inspected id={} name={} at={}", saved.getId(), saved.getName(),
+                    saved.getLastInspection());
+            return saved;
+        });
     }
 
     @Transactional(readOnly = true)

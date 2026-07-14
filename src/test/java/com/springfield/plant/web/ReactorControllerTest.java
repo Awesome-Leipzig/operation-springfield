@@ -17,6 +17,7 @@ import java.util.Optional;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -74,5 +75,26 @@ class ReactorControllerTest {
         mockMvc.perform(get("/api/reactors/output"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Total online output: 992 MW"));
+    }
+
+    @Test
+    @DisplayName("shouldReturnUpdatedReactor_whenInspectingKnownReactor")
+    void shouldReturnUpdatedReactor_whenInspectingKnownReactor() throws Exception {
+        var reactor = new Reactor("Old Bessie", "7G", "ONLINE", 480, Instant.now());
+        reactor.setId(1L);
+        when(reactorService.inspect(1L)).thenReturn(Optional.of(reactor));
+
+        mockMvc.perform(post("/api/reactors/1/inspect"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Old Bessie"));
+    }
+
+    @Test
+    @DisplayName("shouldReturn404_whenInspectingUnknownReactor")
+    void shouldReturn404_whenInspectingUnknownReactor() throws Exception {
+        when(reactorService.inspect(99L)).thenReturn(Optional.empty());
+
+        mockMvc.perform(post("/api/reactors/99/inspect"))
+                .andExpect(status().isNotFound());
     }
 }

@@ -39,6 +39,7 @@ Then:
 |---|---|
 | http://localhost:8080/ | Plant dashboard (Thymeleaf) |
 | http://localhost:8080/api/reactors | Reactor REST API |
+| `POST /api/reactors/{id}/inspect` | Record a reactor inspection now (clears it off the overdue list) |
 | http://localhost:8080/api/incidents | Safety incidents |
 | http://localhost:8080/api/incidents/donuts | A critical plant KPI 🍩 |
 | http://localhost:8080/swagger-ui/index.html | OpenAPI Swagger UI |
