@@ -1,0 +1,117 @@
+{
+  "$schema": "../../../../.github/modernize/schemas/tasks-schema.json",
+  "description": "Tasks template for modernization plan. Generate this file alongside plan.md to track individual migration tasks.",
+  "tasks": [
+    {
+      "type": "upgrade",
+      "id": "001-upgrade-java-version",
+      "description": "Upgrade the Java runtime from the end-of-support Java 8 to a supported LTS version.",
+      "reason": "Addresses issues: Java Version Has Reached the End of Support. Java 8 no longer receives OSS security updates and blocks compatibility with modern Spring and Azure runtimes.",
+      "requirements": "Upgrade the project from Java 1.8 to a supported LTS Java version compatible with the target Spring Boot and Spring Framework versions. Update the java.version, maven.compiler.source, and maven.compiler.target properties in pom.xml and resolve any resulting compilation issues.",
+      "kbId": "java-version-upgrade",
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "false",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "upgrade",
+      "id": "002-upgrade-spring-framework",
+      "description": "Upgrade the Spring Framework to a supported major version.",
+      "reason": "Addresses issues: Spring Framework Version Has Reached the End of OSS Support. The current Spring Framework version is out of OSS support and incompatible with the target Java runtime.",
+      "requirements": "Upgrade Spring Framework to a supported major version compatible with the upgraded Java runtime, including the Jakarta EE (javax.* to jakarta.*) namespace migration that the Spring Framework upgrade entails. Resolve API and configuration changes introduced by the new major version.",
+      "kbId": "spring-framework-upgrade",
+      "dependencies": ["001-upgrade-java-version"],
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "false",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "upgrade",
+      "id": "003-upgrade-spring-boot",
+      "description": "Upgrade Spring Boot from the end-of-support 2.3.x line to a supported major version.",
+      "reason": "Addresses issues: Spring Boot Version Has Reached the End of OSS Support. Spring Boot 2.3.12 is end-of-life and must be upgraded for security patches and Azure readiness.",
+      "requirements": "Upgrade Spring Boot from 2.3.12.RELEASE to a supported major version compatible with the upgraded Java runtime and Spring Framework. Update the parent version and starter dependencies in pom.xml, migrate deprecated/renamed configuration properties, and resolve breaking changes.",
+      "kbId": "spring-boot-upgrade",
+      "dependencies": ["002-upgrade-spring-framework"],
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "false",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "transform",
+      "id": "004-transform-jakarta-persistence-to-azure",
+      "description": "Migrate the Jakarta Persistence (JPA) data layer to be Azure-ready.",
+      "reason": "Addresses issues: Detects usage of Jakarta Persistence (JPA) APIs. The JPA persistence layer must be validated and adapted so it runs against an Azure-managed database service after the runtime upgrade.",
+      "requirements": "Review and migrate the Jakarta Persistence (JPA) usage so the application's data access layer is compatible with an Azure-managed database service. Ensure JPA entities, repositories, and datasource configuration function correctly on the upgraded Jakarta EE namespace and are ready for Azure deployment.",
+      "dependencies": ["003-upgrade-spring-boot"],
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "false",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "transform",
+      "id": "005-transform-migration-plaintext-credential-to-azure-keyvault",
+      "description": "Move plaintext credentials from configuration files into Azure Key Vault.",
+      "reason": "Addresses issues: Password found in configuration file. Storing clear passwords in application.properties is a security risk and must be replaced with secure secret management.",
+      "requirements": "Migrate the plaintext password and any other secrets found in src/main/resources/application.properties to Azure Key Vault. Update the application to retrieve secrets securely from Azure Key Vault at runtime and remove the plaintext values from configuration files.",
+      "kbId": "plaintext-credential-to-azure-keyvault",
+      "skills": [
+        {
+          "name": "migration-plaintext-credential-to-azure-keyvault",
+          "location": "builtin"
+        }
+      ],
+      "dependencies": ["004-transform-jakarta-persistence-to-azure"],
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "false",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "transform",
+      "id": "006-transform-remove-hardcoded-credentials",
+      "description": "Remove hard-coded credentials from Java source code.",
+      "reason": "Addresses issues: CRA: Hard-coded password in Java source code, CRA: Hard-coded API key or secret in Java source code. Hard-coded secrets in SecretConstants.java violate the EU Cyber Resilience Act and can be extracted from compiled binaries.",
+      "requirements": "Remove the hard-coded password and API key/secret from src/main/java/com/springfield/plant/util/SecretConstants.java. Replace them with secure runtime configuration (e.g., externalized configuration or secret store injection) so no credentials remain in source code.",
+      "dependencies": ["005-transform-migration-plaintext-credential-to-azure-keyvault"],
+      "successCriteria": {
+        "passBuild": "true",
+        "generateNewUnitTests": "false",
+        "passUnitTests": "true"
+      }
+    },
+    {
+      "type": "deployment",
+      "id": "007-deployment-spring-cloud-app-to-azure",
+      "description": "Containerize and deploy the Spring application to Azure.",
+      "reason": "Addresses issues: Server port configuration found. Hard-coded server port and restricted configuration must be reconciled with the Azure hosting platform when deploying the Spring application to Azure.",
+      "requirements": "Containerize and deploy the upgraded Spring application to Azure Container Apps. Reconcile the server port and restricted configuration settings for the Azure hosting environment, provision the required Azure resources, and deploy the application.",
+      "targetAzureService": "Azure Container Apps",
+      "resourceStatus": "New Azure Container Apps resource will be created",
+      "deploymentTool": "bicep",
+      "skills": [
+        {
+          "name": "azcli-containerapp-deploy",
+          "location": "builtin"
+        }
+      ],
+      "dependencies": ["006-transform-remove-hardcoded-credentials"]
+    }
+  ],
+  "metadata": {
+    "planName": "Springfield Azure Modernization",
+    "projectName": "sector-7g-safety-ledger",
+    "language": "java",
+    "createdAt": "2026-07-14T10:15:00.000Z",
+    "version": "1.0"
+  }
+}
