@@ -93,6 +93,22 @@ hours.
    re-adding the enforcement unilaterally, since the revert was someone else's
    deliberate call. `TRIAGE.md` finding S7 (no Spring Security on the API) is still
    open — flagged for the team.
+7. **IaC bug: `azd provision` alone reset the live image to a CrashLoopBackOff
+   placeholder**. `resources.bicep`'s container `image` was hardcoded to the
+   bootstrapping placeholder (`mcr.microsoft.com/k8se/quickstart:latest`, which
+   listens on port 80). Any `azd provision` run *not* immediately followed by
+   `azd deploy` (e.g. after an infra-only fix like the `minReplicas` revert above)
+   silently re-applied that placeholder over the real running app, and since the
+   placeholder doesn't listen on this app's port 8080, the replica never passed
+   readiness and crash-looped — caught live via `az containerapp revision list`
+   showing the 100%-traffic revision as `Unhealthy`. Immediate fix: `azd deploy` to
+   restore the real image. Root-cause fix: added a `webImageName` parameter
+   (defaulting to empty, threaded through `main.bicep` → `main.parameters.json` as
+   `${SERVICE_WEB_IMAGE_NAME}`, the azd-managed value that persists the
+   last-deployed image) so `azd provision` alone now preserves whatever image is
+   actually running, only falling back to the placeholder on a genuinely first-ever
+   provision. Verified: ran `azd provision` alone afterward — image stayed correct,
+   revision stayed `Healthy`, smoke test 4/4.
 
 ## Phase-by-phase completion summary
 

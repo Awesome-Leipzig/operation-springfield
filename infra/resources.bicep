@@ -36,6 +36,11 @@ param identityName string
 @description('Whether to create the RBAC role assignments (ACR pull, Key Vault Secrets User) for the managed identity. Requires Microsoft.Authorization/roleAssignments/write at the resource group scope (e.g. Owner or User Access Administrator) — Contributor alone is NOT sufficient. Set to false to fall back to ACR admin-credential-based pull and a plain env var for the API key; flip back to true and re-run `azd provision` once someone with sufficient permission is available.')
 param assignRoles bool = true
 
+@description('Image to run for the "web" service, set by azd via SERVICE_WEB_IMAGE_NAME after a successful `azd deploy`. Empty on the very first `azd provision`, before any app image has ever been pushed — falls back to a placeholder MCR quickstart image in that case only. IMPORTANT: this parameter exists specifically so a bare `azd provision` (infra-only, no app rebuild) does NOT clobber whatever image is actually running — an earlier version of this template hardcoded the placeholder image unconditionally, which silently reset the live Container App back to it (CrashLoopBackOff, since the quickstart image listens on port 80, not port 8080) every time `azd provision` ran without an immediately following `azd deploy`. This happened once in production — see PLAN.md.')
+param webImageName string = ''
+
+var effectiveWebImageName = empty(webImageName) ? 'mcr.microsoft.com/k8se/quickstart:latest' : webImageName
+
 var containerAppName = 'ca-${resourceToken}'
 var containerRegistryName = 'acr${resourceToken}'
 var keyVaultName = 'kv-${resourceToken}'
@@ -254,9 +259,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
     template: {
       containers: [
         {
-          // Placeholder image; `azd deploy` replaces this with the built/pushed
-          // application image on first deploy.
-          image: 'mcr.microsoft.com/k8se/quickstart:latest'
+          image: effectiveWebImageName
           name: 'sector-7g-safety-ledger'
           env: [
             { name: 'SERVER_PORT', value: '8080' }

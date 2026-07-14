@@ -21,6 +21,9 @@ param resourceGroupName string
 @description('Id of the principal running `azd provision` (for local dev DB access). Optional.')
 param principalId string = ''
 
+@description('Image for the "web" service, set by azd (SERVICE_WEB_IMAGE_NAME) after the first `azd deploy`. Empty on the very first `azd provision`, before any app image has ever been pushed.')
+param webImageName string = ''
+
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
 // Mirrors the org's tagging convention already applied to rg-swo-gh-hackathon-team2,
 // so cost/ownership reporting on child resources lines up with the resource group.
@@ -57,6 +60,7 @@ module resources 'resources.bicep' = {
     identityPrincipalId: identity.outputs.principalId
     identityClientId: identity.outputs.clientId
     identityName: identity.outputs.name
+    webImageName: webImageName
   }
 }
 
